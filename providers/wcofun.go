@@ -1,22 +1,34 @@
-// 9Anime.me provider
+// wcofun.com provider
 
 package providers
 
 import (
 	"blackbeard/blackbeard"
-	"net/url"
 	"github.com/PuerkitoBio/goquery"
+	"net/url"
 )
 
-type NineAnime struct{}
+var UserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"}
 
-func (a NineAnime) SearchShows(query string) []blackbeard.Shows {
-	rootUrl := "https://9anime.vc"
-	url := rootUrl + "/search?keyword=" + url.QueryEscape(query)
+type Wcofun struct{}
+
+func (a Wcofun) SearchShows(query string) []blackbeard.Shows {
+	rootUrl := "https://www.wcofun.com"
+	_url := rootUrl + "/search"
 
 	// Find shows
 	var shows []blackbeard.Shows
-	request := blackbeard.Request{Url: url}
+
+	request := blackbeard.Request{
+		Url: _url,
+		Method: "POST",
+		Headers: UserAgent,
+		Body: map[string]string{
+			"catara": url.QueryEscape(query),
+			"konuara": "series",
+		},
+	}
+
 	blackbeard.ScrapePage(request, ".flw-item", func(i int, s *goquery.Selection) {
 		aTag := s.Find("a")
 		title := aTag.Text()
@@ -26,7 +38,7 @@ func (a NineAnime) SearchShows(query string) []blackbeard.Shows {
 	return shows
 }
 
-func (a NineAnime) SearchEpisodes(shows *blackbeard.Shows, query string) []blackbeard.Episode {
+func (a Wcofun) SearchEpisodes(shows *blackbeard.Shows, query string) []blackbeard.Episode {
 	url := shows.Url
 	request := blackbeard.Request{Url: url}
 	blackbeard.ScrapePage(request, ".episodes-ul", func(i int, s *goquery.Selection) {
