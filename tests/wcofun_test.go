@@ -6,9 +6,9 @@ import (
 	"blackbeard/providers"
 )
 
-func TestNineAnime(t *testing.T) {
-	t.Run("9 anime test", func(t *testing.T) {
-		a := providers.GetProviders()["9anime"]
+func TestWcofun(t *testing.T) {
+	t.Run("Wcofun test", func(t *testing.T) {
+		a := providers.GetProviders()["wcofun"]
 		shows := a.SearchShows("attack on titan")
 		fmt.Println(shows[1])
 		episodes := a.SearchEpisodes(&shows[1], "")
