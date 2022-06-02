@@ -3,7 +3,7 @@
 package providers
 
 import (
-	"blackbeard/blackbeard"
+	"blackbeard/blb"
 )
 
 func GetProviders() map[string]blackbeard.VideoProvider {
