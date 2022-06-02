@@ -3,7 +3,7 @@
 package providers
 
 import (
-	"blackbeard/blackbeard"
+	"blackbeard/blb"
 	"net/url"
 	"github.com/PuerkitoBio/goquery"
 )

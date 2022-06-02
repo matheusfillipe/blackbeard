@@ -3,9 +3,8 @@
 package providers
 
 import (
-	"blackbeard/blackbeard"
+	"blackbeard/blb"
 	"github.com/PuerkitoBio/goquery"
-	"net/url"
 )
 
 var UserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"}
@@ -23,8 +22,9 @@ func (a Wcofun) SearchShows(query string) []blackbeard.Shows {
 		Url: _url,
 		Method: "POST",
 		Headers: UserAgent,
+		Curl: true,
 		Body: map[string]string{
-			"catara": url.QueryEscape(query),
+			"catara": query,
 			"konuara": "series",
 		},
 	}

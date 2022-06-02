@@ -7,6 +7,7 @@ require github.com/gocolly/colly v1.2.0
 require (
 	9fans.net/go v0.0.4 // indirect
 	github.com/PuerkitoBio/goquery v1.8.0 // indirect
+	github.com/andelf/go-curl v0.0.0-20200630032108-fd49ff24ed97 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/antchfx/htmlquery v1.2.4 // indirect
 	github.com/antchfx/xmlquery v1.3.10 // indirect
