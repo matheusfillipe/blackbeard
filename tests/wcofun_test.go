@@ -2,7 +2,6 @@ package main
 
 import (
 	"blackbeard/providers"
-	"blackbeard/blb"
 	"fmt"
 	"testing"
 )
@@ -15,13 +14,12 @@ func TestWcofun(t *testing.T) {
 			t.Error("No shows found")
 		}
 
-		episodes := a.SearchEpisodes(&shows[0], "")
+		episodes := a.GetEpisodes(&shows[0], "")
 		if len(episodes) < 1 {
 			t.Error("No episodes found")
 		}
 
-		episode := blackbeard.Episode{Url: "https://www.wcofun.com/attack-on-titan-episode-1-english-dubbed-3"}
-		video := a.GetVideo(&episode)
+		video := a.GetVideo(&episodes[0])
 		fmt.Println(video.Url)
 	})
 }
