@@ -172,6 +172,6 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 		url = data.Cdn + "/getvid?evid=" + data.Enc
 	}
 
-	episode.Video = blackbeard.Video{Url: url, Format: "mp4", Headers: UserAgent}
+	episode.Video = blackbeard.Video{Url: url, Format: "mp4", Headers: UserAgent, Name: blackbeard.SanitizeFilename(episode.Title)}
 	return episode.Video
 }

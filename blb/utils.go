@@ -165,3 +165,26 @@ Loop:
 	fmt.Printf("Download saved to ./%v \n", resp.Filename)
 	return true
 }
+
+func SanitizeFilename(name string) string {
+  name = strings.Replace(name, ":", "", -1)
+  name = strings.Replace(name, "?", "", -1)
+  name = strings.Replace(name, "=", "", -1)
+  name = strings.Replace(name, "&", "", -1)
+  name = strings.Replace(name, "/", "", -1)
+  name = strings.Replace(name, "\\", "", -1)
+  name = strings.Replace(name, "*", "", -1)
+  name = strings.Replace(name, "\"", "", -1)
+  name = strings.Replace(name, "<", "", -1)
+  name = strings.Replace(name, ">", "", -1)
+  name = strings.Replace(name, "|", "", -1)
+  name = strings.Replace(name, "!", "", -1)
+  name = strings.Replace(name, "`", "", -1)
+  name = strings.Replace(name, "~", "", -1)
+  name = strings.Replace(name, ",", "", -1)
+  name = strings.Replace(name, "'", "", -1)
+  name = strings.Replace(name, ".", "", -1)
+  name = strings.Replace(name, ";", "", -1)
+  name = strings.Replace(name, " ", "-", -1)
+  return name
+}
