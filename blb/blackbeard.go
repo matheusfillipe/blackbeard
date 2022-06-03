@@ -17,6 +17,7 @@ type Show struct {
 
 type Video struct {
 	Url     string
+	Name    string
 	Format  string
 	Headers map[string]string
 }
