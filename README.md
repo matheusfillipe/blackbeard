@@ -8,6 +8,16 @@ Similar projects:
 - https://github.com/anime-dl
 - https://github.com/LagradOst/CloudStream-3
 
+# Installation
+
+Make sure `$(go env GOPATH)` is on your `PATH` and run:
+
+``` sh
+go install github.com/matheusfillipe/blackbeard@latest
+```
+
+Then check the help with `blackbeard -h`
+
 
 # TODO
 
