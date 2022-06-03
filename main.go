@@ -10,7 +10,7 @@ import (
 func main() {
 		a := providers.GetProviders()["wcofun"]
 		shows := a.SearchShows("attack on titan")
-		fmt.Println(shows[1])
-		episodes := a.SearchEpisodes(&shows[1], "")
-		fmt.Println(episodes)
+		fmt.Println("SHOWS: ", shows)
+		episodes := a.SearchEpisodes(&shows[0], "")
+		fmt.Println("EPS: ", episodes)
 }
