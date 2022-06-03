@@ -11,7 +11,7 @@ func TestNineAnime(t *testing.T) {
 		a := providers.GetProviders()["9anime"]
 		shows := a.SearchShows("attack on titan")
 		fmt.Println("Shows: ", shows[1])
-		episodes := a.SearchEpisodes(&shows[1], "")
+		episodes := a.GetEpisodes(&shows[1], "")
 		fmt.Println(episodes)
 	})
 }

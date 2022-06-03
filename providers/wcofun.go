@@ -51,7 +51,7 @@ func (a Wcofun) SearchShows(query string) []blackbeard.Show {
 	return shows
 }
 
-func (a Wcofun) SearchEpisodes(show *blackbeard.Show, query string) []blackbeard.Episode {
+func (a Wcofun) GetEpisodes(show *blackbeard.Show, query string) []blackbeard.Episode {
 	url := show.Url
 	request := blackbeard.Request{
 		Url:     url,
@@ -172,6 +172,6 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 		url = data.Cdn + "/getvid?evid=" + data.Enc
 	}
 
-	episode.VideoUrl = url
-	return blackbeard.Video{Url: url, Format: "mp4"}
+	episode.Video = blackbeard.Video{Url: url, Format: "mp4", Headers: UserAgent}
+	return episode.Video
 }

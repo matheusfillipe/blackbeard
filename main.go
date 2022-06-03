@@ -8,9 +8,10 @@ import (
 )
 
 func main() {
-		a := providers.GetProviders()["wcofun"]
-		shows := a.SearchShows("attack on titan")
-		fmt.Println("SHOWS: ", shows)
-		episodes := a.SearchEpisodes(&shows[0], "")
-		fmt.Println("EPS: ", episodes)
+	a := providers.GetProviders()["wcofun"]
+	shows := a.SearchShows("attack on titan")
+	episodes := a.GetEpisodes(&shows[0], "")
+	video := a.GetVideo(&episodes[0])
+	fmt.Print("Downloading: ", video.Url)
+	video.Download()
 }

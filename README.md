@@ -14,5 +14,5 @@ Similar projects:
 - [ ] Cli arg parsing
 - [ ] http api
 - [ ] Profiles that store watch history
-- [ ] wcofun provider
+- [x] wcofun provider
 - [ ] 9anime provider
