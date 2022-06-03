@@ -3,9 +3,9 @@
 package providers
 
 import (
-	"blackbeard/blb"
 	"encoding/base64"
 	"fmt"
+	"github.com/matheusfillipe/blackbeard/blb"
 	"regexp"
 	"strconv"
 	"strings"

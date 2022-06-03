@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/matheusfillipe/blackbeard/providers"
 	"testing"
-	"blackbeard/providers"
 )
 
 func TestNineAnime(t *testing.T) {
