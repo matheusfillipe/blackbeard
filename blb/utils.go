@@ -106,6 +106,10 @@ func Soup(text string, selector string, handler func(int, *goquery.Selection)) {
 
 // Get Json request
 func GetJson[T any](request Request, data T) T {
+	// Check if request.Headers map is nil before assigning to it
+	if request.Headers == nil {
+		request.Headers = map[string]string{}
+	}
 	request.Headers["accept"] = "application/json, text/javascript, */*; q=0.01"
 	body, ok := curl(request)
 	if !ok {
@@ -126,9 +130,9 @@ func GetJson[T any](request Request, data T) T {
 func (video Video) Download() bool {
 	// create client
 	client := grab.NewClient()
-	req, _ := grab.NewRequest(".", video.Url)
+	req, _ := grab.NewRequest(".", video.Request.Url)
 
-	for key, value := range video.Headers {
+	for key, value := range video.Request.Headers {
 		req.HTTPRequest.Header.Set(key, value)
 	}
 
@@ -167,24 +171,24 @@ Loop:
 }
 
 func SanitizeFilename(name string) string {
-  name = strings.Replace(name, ":", "", -1)
-  name = strings.Replace(name, "?", "", -1)
-  name = strings.Replace(name, "=", "", -1)
-  name = strings.Replace(name, "&", "", -1)
-  name = strings.Replace(name, "/", "", -1)
-  name = strings.Replace(name, "\\", "", -1)
-  name = strings.Replace(name, "*", "", -1)
-  name = strings.Replace(name, "\"", "", -1)
-  name = strings.Replace(name, "<", "", -1)
-  name = strings.Replace(name, ">", "", -1)
-  name = strings.Replace(name, "|", "", -1)
-  name = strings.Replace(name, "!", "", -1)
-  name = strings.Replace(name, "`", "", -1)
-  name = strings.Replace(name, "~", "", -1)
-  name = strings.Replace(name, ",", "", -1)
-  name = strings.Replace(name, "'", "", -1)
-  name = strings.Replace(name, ".", "", -1)
-  name = strings.Replace(name, ";", "", -1)
-  name = strings.Replace(name, " ", "-", -1)
-  return name
+	name = strings.Replace(name, ":", "", -1)
+	name = strings.Replace(name, "?", "", -1)
+	name = strings.Replace(name, "=", "", -1)
+	name = strings.Replace(name, "&", "", -1)
+	name = strings.Replace(name, "/", "", -1)
+	name = strings.Replace(name, "\\", "", -1)
+	name = strings.Replace(name, "*", "", -1)
+	name = strings.Replace(name, "\"", "", -1)
+	name = strings.Replace(name, "<", "", -1)
+	name = strings.Replace(name, ">", "", -1)
+	name = strings.Replace(name, "|", "", -1)
+	name = strings.Replace(name, "!", "", -1)
+	name = strings.Replace(name, "`", "", -1)
+	name = strings.Replace(name, "~", "", -1)
+	name = strings.Replace(name, ",", "", -1)
+	name = strings.Replace(name, "'", "", -1)
+	name = strings.Replace(name, ".", "", -1)
+	name = strings.Replace(name, ";", "", -1)
+	name = strings.Replace(name, " ", "-", -1)
+	return name
 }

@@ -39,5 +39,5 @@ func (a NineAnime) GetEpisodes(shows *blackbeard.Show, query string) []blackbear
 }
 
 func (a NineAnime) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
-	return blackbeard.Video{Url: "TODO", Format: "mp4"}
+	return blackbeard.Video{Request: blackbeard.Request{Url: "TODO"}, Format: "mp4"}
 }

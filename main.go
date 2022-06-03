@@ -6,14 +6,15 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strings"
 
+	"github.com/c-bata/go-prompt"
 	"github.com/ktr0731/go-fuzzyfinder"
 	"github.com/matheusfillipe/blackbeard/providers"
-	"github.com/c-bata/go-prompt"
 )
 
-
 func completer(d prompt.Document) []prompt.Suggest {
+	// TODO read from cache
 	s := []prompt.Suggest{
 		{Text: "attack on titan", Description: "Very nice one"},
 	}
@@ -41,55 +42,64 @@ func main() {
 		providerNames,
 		func(i int) string {
 			return providerNames[i]
-		},
-		fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
-			if i == -1 {
-				return ""
-			}
-			return fmt.Sprintf("Provider %s",
-				providerNames[i])
-		}))
+		})
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	provider := providers[providerNames[idx]]
+	providerName := providerNames[idx]
+	provider := providers[providerName]
 
-  fmt.Println("Choose show/anime to search for: ")
-  t := prompt.Input("> ", completer)
+	fmt.Println("Choose show/anime to search for: ")
+	t := prompt.Input("> ", completer)
 	shows := provider.SearchShows(t)
 
 	idx, err = fuzzyfinder.Find(
 		shows,
 		func(i int) string {
 			return shows[i].Title
-		})
-
-  show := shows[idx]
-	episodes := provider.GetEpisodes(&show, "")
-
-	idx, err = fuzzyfinder.Find(
-		episodes,
-		func(i int) string {
-			return fmt.Sprintf("%v > %v", episodes[i].Number, episodes[i].Title)
 		},
 		fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
 			if i == -1 {
 				return ""
 			}
-			return fmt.Sprintf("Show %s",
-				episodes[i].Title)
+			return fmt.Sprintf("Provider: %s\nShow: %s\n\nDescription: %s\n\n\n%s",
+				strings.ToUpper(providerName),
+				shows[i].Title,
+				shows[i].Metadata.Description,
+				shows[i].Metadata.ThumbnailUrl,
+			)
+		}))
+
+	show := shows[idx]
+	episodes := provider.GetEpisodes(&show, "")
+
+	idx, err = fuzzyfinder.Find(
+		episodes,
+		func(i int) string {
+			return fmt.Sprintf("%v > %v", episodes[i].Number + 1, episodes[i].Title)
+		},
+		fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
+			if i == -1 {
+				return ""
+			}
+			return fmt.Sprintf("Provider: %s\nShow: %s\nEpisode n. %d\n\nDescription: %s",
+				strings.ToUpper(providerName),
+				show.Title,
+				episodes[i].Number+1,
+				episodes[i].Metadata.Description,
+			)
 		}))
 
 	if err != nil {
 		log.Fatal(err)
-	} 
+	}
 
-  episode := episodes[idx]
+	episode := episodes[idx]
 	fmt.Printf("Selected: %v\n", episode.Title)
 
 	video := provider.GetVideo(&episode)
-	fmt.Print("Downloading: ", video.Url)
+	fmt.Print("Downloading: ", video.Request.Url)
 	video.Download()
 }

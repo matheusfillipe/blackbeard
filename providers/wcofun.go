@@ -48,6 +48,9 @@ func (a Wcofun) SearchShows(query string) []blackbeard.Show {
 		href := s.Find("a").AttrOr("href", "")
 		shows = append(shows, blackbeard.Show{Url: href, Title: title})
 	})
+	for i := range shows {
+		blackbeard.EpisodatePopulateShowMetadata(&shows[i])
+	}
 	return shows
 }
 
@@ -73,7 +76,7 @@ func (a Wcofun) GetEpisodes(show *blackbeard.Show, query string) []blackbeard.Ep
 	for i, j := 0, length-1; i < j; i, j = i+1, j-1 {
 		show.Episodes[i], show.Episodes[j] = show.Episodes[j], show.Episodes[i]
 	}
-
+	blackbeard.EpisodatePopulateEpisodesMetadata(show)
 	return show.Episodes
 }
 
@@ -133,7 +136,7 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 	})
 
 	if next_path == "" {
-		return blackbeard.Video{Url: url, Format: "mp4"}
+		return blackbeard.Video{Request: blackbeard.Request{Url: url}, Format: "mp4"}
 	}
 
 	next_path = rootUrl + next_path
@@ -172,6 +175,7 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 		url = data.Cdn + "/getvid?evid=" + data.Enc
 	}
 
-	episode.Video = blackbeard.Video{Url: url, Format: "mp4", Headers: UserAgent, Name: blackbeard.SanitizeFilename(episode.Title)}
+	videoRequest := blackbeard.Request{Url: url, Headers: UserAgent}
+	episode.Video = blackbeard.Video{Request: videoRequest, Format: "mp4", Name: blackbeard.SanitizeFilename(episode.Title)}
 	return episode.Video
 }
