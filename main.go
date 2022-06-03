@@ -4,7 +4,8 @@ package main
 
 import (
 	"fmt"
-	"blackbeard/providers"
+
+	"github.com/matheusfillipe/blackbeard/providers"
 )
 
 func main() {

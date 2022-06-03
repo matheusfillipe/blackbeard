@@ -3,9 +3,9 @@
 package providers
 
 import (
-	"blackbeard/blb"
-	"net/url"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/matheusfillipe/blackbeard/blb"
+	"net/url"
 )
 
 type NineAnime struct{}
