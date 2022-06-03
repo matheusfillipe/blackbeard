@@ -1,4 +1,4 @@
-module blackbeard
+module github.com/matheusfillipe/blackbeard
 
 go 1.18
 
