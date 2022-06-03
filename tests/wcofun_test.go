@@ -20,6 +20,6 @@ func TestWcofun(t *testing.T) {
 		}
 
 		video := a.GetVideo(&episodes[0])
-		fmt.Println(video.Url)
+		fmt.Println(video.Request.Url)
 	})
 }

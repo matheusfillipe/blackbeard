@@ -2,24 +2,31 @@
 
 package blackbeard
 
+type Metadata struct {
+	Description  string
+	ThumbnailUrl string
+}
+
 type Episode struct {
-	Title  string
-	Number int
-	Url    string
-	Video  Video
+	Title    string
+	Number   int
+	Url      string
+	Video    Video
+	Metadata Metadata
 }
 
 type Show struct {
 	Title    string
 	Url      string
 	Episodes []Episode
+	Metadata Metadata
 }
 
 type Video struct {
-	Url     string
-	Name    string
-	Format  string
-	Headers map[string]string
+	Name     string
+	Format   string
+	Request  Request
+	Metadata Metadata
 }
 
 type VideoProvider interface {
