@@ -137,9 +137,9 @@ func (video Video) Download() bool {
 	// create client
 	client := grab.NewClient()
 	req, _ := grab.NewRequest(".", video.Request.Url)
-  ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-  req = req.WithContext(ctx)
+	req = req.WithContext(ctx)
 
 	for key, value := range video.Request.Headers {
 		req.HTTPRequest.Header.Set(key, value)
@@ -209,6 +209,12 @@ Loop:
 		}
 	}
 
+	fmt.Print("\033[1A\033[K")
+	fmt.Printf("Finished %s: %.2fMB/%.2fMB (100%%)\n",
+		resp.Filename,
+		float64(resp.BytesComplete())/1024/1024,
+		float64(resp.Size())/1024/1024)
+
 	// check for errors
 	if err := resp.Err(); err != nil {
 		println("Download failed: %v\n", err.Error())
@@ -222,8 +228,6 @@ Loop:
 func SanitizeFilename(filename string) string {
 	return sanitize.Path(filename)
 }
-
-
 
 // TAKEN FROM https://github.com/mitchellh/go-wordwrap
 const nbsp = 0xA0
@@ -305,25 +309,25 @@ func WrapString(s string, lim uint) string {
 
 // Wrap reguardles of spaces
 func WrapStringReguardlessly(s string, width uint) string {
-  // Initialize a buffer with a slightly larger size to account for breaks
-  init := make([]byte, 0, len(s))
-  buf := bytes.NewBuffer(init)
+	// Initialize a buffer with a slightly larger size to account for breaks
+	init := make([]byte, 0, len(s))
+	buf := bytes.NewBuffer(init)
 
-  var count uint
+	var count uint
 
-  for _, char := range s {
-    if count + 1 > uint(width) {
-      buf.WriteRune('\n')
-      count = 0
-    } else if char == '\n' {
-      buf.WriteRune(char)
-      count = 0
-    } else {
-      buf.WriteRune(char)
-      count++
-    }
-  }
+	for _, char := range s {
+		if count+1 > uint(width) {
+			buf.WriteRune('\n')
+			count = 0
+		} else if char == '\n' {
+			buf.WriteRune(char)
+			count = 0
+		} else {
+			buf.WriteRune(char)
+			count++
+		}
+	}
 
-  return buf.String()
+	return buf.String()
 
 }

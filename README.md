@@ -22,7 +22,7 @@ To get cloudflare blocked providers to work you need [curl-impersonate](https://
 
 After curl-impersonate is installed, run it like:
 
-`LD_PRELOAD=/usr/lib/libcurl-impersonate-chrome.so blackbeard`
+`LD_PRELOAD=/usr/local/lib/libcurl-impersonate-chrome.so blackbeard`
 
 
 # Usage
