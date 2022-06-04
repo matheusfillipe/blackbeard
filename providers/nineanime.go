@@ -26,7 +26,7 @@ func (a NineAnime) SearchShows(query string) []blackbeard.Show {
 	return shows
 }
 
-func (a NineAnime) GetEpisodes(shows *blackbeard.Show, query string) []blackbeard.Episode {
+func (a NineAnime) GetEpisodes(shows *blackbeard.Show) []blackbeard.Episode {
 	url := shows.Url
 	request := blackbeard.Request{Url: url}
 	blackbeard.ScrapePage(request, ".episodes-ul", func(i int, s *goquery.Selection) {

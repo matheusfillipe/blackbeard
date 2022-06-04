@@ -54,7 +54,7 @@ func (a Wcofun) SearchShows(query string) []blackbeard.Show {
 	return shows
 }
 
-func (a Wcofun) GetEpisodes(show *blackbeard.Show, query string) []blackbeard.Episode {
+func (a Wcofun) GetEpisodes(show *blackbeard.Show) []blackbeard.Episode {
 	url := show.Url
 	request := blackbeard.Request{
 		Url:     url,
