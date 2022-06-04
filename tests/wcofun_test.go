@@ -14,7 +14,7 @@ func TestWcofun(t *testing.T) {
 			t.Error("No shows found")
 		}
 
-		episodes := a.GetEpisodes(&shows[0], "")
+		episodes := a.GetEpisodes(&shows[0])
 		if len(episodes) < 1 {
 			t.Error("No episodes found")
 		}

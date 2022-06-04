@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -27,8 +28,110 @@ func completer(d prompt.Document) []prompt.Suggest {
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 }
 
-func downloadCli() {
-	providers := providers.GetProviders()
+type TuiFlowTemplate interface {
+	getProviders() map[string]blb.VideoProvider
+	setProvider(provider blb.VideoProvider, name string)
+	searchShows(t string) []blb.Show
+	getEpisodes(show blb.Show) []blb.Episode
+	getVideo(episode blb.Episode) blb.Video
+}
+
+type localFlow struct {
+	provider blb.VideoProvider
+}
+
+func (flow localFlow) getProviders() map[string]blb.VideoProvider {
+	return providers.GetProviders()
+}
+
+func (flow *localFlow) setProvider(provider blb.VideoProvider, name string) {
+	flow.provider = provider
+}
+
+func (flow localFlow) searchShows(t string) []blb.Show {
+	return flow.provider.SearchShows(t)
+}
+
+func (flow localFlow) getEpisodes(show blb.Show) []blb.Episode {
+	return flow.provider.GetEpisodes(&show)
+}
+
+func (flow localFlow) getVideo(episode blb.Episode) blb.Video {
+	return flow.provider.GetVideo(&episode)
+}
+
+type apiFlow struct {
+	provider    blb.VideoProvider
+	baseRequest blb.Request
+}
+
+type apiProvider struct {
+	Name        string
+	BaseRequest blb.Request
+}
+
+func (a apiProvider) SearchShows(query string) []blb.Show {
+	path := fmt.Sprintf("search?provider=%s&q=%s", a.Name, url.QueryEscape(query))
+	data := struct {
+		Shows []blb.Show `json:"shows"`
+	}{}
+	blb.GetJson(a.BaseRequest.New(path), &data)
+	return data.Shows
+}
+
+func (a apiProvider) GetEpisodes(show *blb.Show) []blb.Episode {
+	showurl := show.Url
+	path := fmt.Sprintf("episodes?provider=%s&showurl=%s", a.Name, url.QueryEscape(showurl))
+	data := struct {
+		Episodes []blb.Episode `json:"episodes"`
+	}{}
+	blb.GetJson(a.BaseRequest.New(path), &data)
+	return data.Episodes
+}
+
+func (a apiProvider) GetVideo(episode *blb.Episode) blb.Video {
+	epurl := episode.Url
+	path := fmt.Sprintf("video?provider=%s&epurl=%s", a.Name, url.QueryEscape(epurl))
+	data := blb.Video{}
+	blb.GetJson(a.BaseRequest.New(path), &data)
+	return data
+}
+
+func (flow apiFlow) getProviders() map[string]blb.VideoProvider {
+	providers := struct {
+		Providers []string `json:"providers"`
+	}{}
+	request := flow.baseRequest.New("providers")
+	blb.GetJson(request, &providers)
+
+	resp := make(map[string]blb.VideoProvider)
+	for _, value := range providers.Providers {
+		resp[value] = apiProvider{}
+	}
+	return resp
+}
+
+func (flow *apiFlow) setProvider(provider blb.VideoProvider, name string) {
+	prov := provider.(apiProvider)
+	prov.BaseRequest = flow.baseRequest
+	prov.Name = name
+	flow.provider = prov
+}
+
+func (flow apiFlow) searchShows(t string) []blb.Show {
+	return flow.provider.SearchShows(t)
+}
+
+func (flow apiFlow) getEpisodes(show blb.Show) []blb.Episode {
+	return flow.provider.GetEpisodes(&show)
+}
+
+func (flow apiFlow) getVideo(episode blb.Episode) blb.Video {
+	return flow.provider.GetVideo(&episode)
+}
+
+func downloadTuiFlow(flow TuiFlowTemplate) {
+	providers := flow.getProviders()
 	providerNames := blb.Keys(providers)
 
 	idx, err := fuzzyfinder.Find(
@@ -42,11 +145,14 @@ func downloadCli() {
 	}
 
 	providerName := providerNames[idx]
-	provider := providers[providerName]
+	flow.setProvider(providers[providerName], providerName)
 
 	fmt.Println("Search show/anime: ")
 	t := prompt.Input("> ", completer)
-	shows := provider.SearchShows(t)
+	if t == "" {
+		log.Fatal("No search query")
+	}
+	shows := flow.searchShows(t)
 
 	// TODO put this in another function and reuse in apiClient
 	idx, err = fuzzyfinder.Find(
@@ -70,7 +176,7 @@ func downloadCli() {
 		}))
 
 	show := shows[idx]
-	episodes := provider.GetEpisodes(&show, "")
+	episodes := flow.getEpisodes(show)
 
 	// TODO put this in another function and reuse in apiClient
 	idxs, err2 := fuzzyfinder.FindMulti(
@@ -97,41 +203,41 @@ func downloadCli() {
 		log.Fatal(err)
 	}
 
-	// TODO multitask downloads
+	// TODO multitask, parallel downloads
 	fmt.Println("...")
 	for _, idx := range idxs {
 		idx := idx
 		episode := episodes[idx]
-		video := provider.GetVideo(&episode)
+		video := flow.getVideo(episode)
 		video.Download()
 	}
 }
 
 func apiConnect(host string, port int) {
-  url := "http://" + host + ":" + strconv.Itoa(port) + "/"
+	url := "http://" + host + ":" + strconv.Itoa(port) + "/"
 	println("Attempting connection to blackbeard api at " + url)
 
-  // Check if there is a valid reply
-  request := blb.Request{Url: url + "version"}
-  res, ok := blb.Perform(request)
-  if !ok {
-    log.Fatal("Connection failed")
-  }
-  body := res.Body
-  defer body.Close()
-  buf := new(bytes.Buffer)
-  buf.ReadFrom(body)
-  println(buf.String())
-  if strings.Contains(buf.String(), "version") {
-    println("Connection successful")
-  } else {
-    log.Fatal("Connection failed")
-  }
+	// Check if there is a valid reply
+	request := blb.Request{Url: url + "version"}
+	res, ok := blb.Perform(request)
+	if !ok {
+		log.Fatal("Connection failed")
+	}
 
-  providers := struct {Providers []string `json:"providers"`}{}
-  request.Url = url + "providers"
-  blb.GetJson(request, &providers)
-  fmt.Println("Providers:" + strings.Join(providers.Providers, ", "))
+	body := res.Body
+	defer body.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(body)
+
+	if strings.Contains(buf.String(), "version") {
+		println("Connection successful")
+	} else {
+		log.Fatal("Connection failed")
+	}
+
+	flow := apiFlow{}
+	flow.baseRequest = blb.Request{Url: url}
+	downloadTuiFlow(&flow)
 }
 
 func main() {
@@ -170,5 +276,5 @@ func main() {
 	}
 
 	// Interactive cli
-	downloadCli()
+	downloadTuiFlow(&localFlow{})
 }

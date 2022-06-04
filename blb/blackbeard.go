@@ -31,7 +31,7 @@ type Video struct {
 
 type VideoProvider interface {
 	SearchShows(string) []Show
-	GetEpisodes(*Show, string) []Episode
+	GetEpisodes(*Show) []Episode
 	GetVideo(*Episode) Video
 }
 
@@ -41,4 +41,15 @@ type Request struct {
 	Headers map[string]string
 	Body    map[string]string
 	Curl    bool
+}
+
+// Create a new request from an existing one, appending to the url
+func (r Request) New(path string) Request {
+	return Request{
+		Url:     r.Url + path,
+		Method:  r.Method,
+		Headers: r.Headers,
+		Body:    r.Body,
+		Curl:    r.Curl,
+	}
 }
