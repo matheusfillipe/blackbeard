@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 )
 
 const epd_api = "https://www.episodate.com/api"
@@ -53,14 +54,15 @@ type epdTvShow struct {
 }
 
 func getShowDetails(show *Show) epdShowDetails {
+	name := strings.TrimSuffix(show.Title, " English Subbed")
 	showDetails := epdShowDetails{}
 	showRes := epdShowRes{}
 	request := Request{
-		Url: epd_api + "/search?q=" + url.QueryEscape(show.Title) + "&page=1",
+		Url: epd_api + "/search?q=" + url.QueryEscape(name) + "&page=1",
 	}
 	GetJson(request, &showRes)
 	if len(showRes.Tv_shows) < 1 {
-		println("No episode data found for " + show.Title)
+		println("No episode metadata found for \"" + show.Title + "\"")
 		return showDetails
 	}
 	showId := showRes.Tv_shows[0].Id
