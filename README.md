@@ -18,6 +18,13 @@ go install github.com/matheusfillipe/blackbeard@latest
 
 Then check the help with `blackbeard -h`
 
+To get cloudflare blocked providers to work you need [curl-impersonate](https://github.com/lwthiker/curl-impersonate). On archlinux you can: `yay -S curl-impersonate-chrome`.
+
+After curl-impersonate is installed, run it like:
+
+`LD_PRELOAD=/usr/lib/libcurl-impersonate-chrome.so blackbeard`
+
+
 # Usage
 
 You can run or connect to an api using either `-api` or `-connect`. You can also adjust `-port` and `-host`. If you just run it without arguments you will have an interactive fuzzy interface similar to fzf that will let you download whatever episode. You can mark multiple episodes by hitting or holding `TAB`.
@@ -29,8 +36,9 @@ The app is purely for educational and personal use. It merely scrapes 3rd-party 
 
 # TODO
 
-- [ ] Cli arg parsing
+- [x] Cli arg parsing
 - [ ] http api
 - [ ] Profiles that store watch history
 - [x] wcofun provider
 - [ ] 9anime provider
+- [ ] More providers
