@@ -214,7 +214,7 @@ func startApiServer(host string, port int) {
 		// Store on cache
 		cache[providerName].response_episodes_cache.Add(cache_key, CachedValue{}.New(response))
 		for _, episode := range episodes {
-			cache[providerName].episode_cache.Add(CacheKey{a: showurl, b: episode.Url}, CachedValue{}.New(episode))
+			cache[providerName].episode_cache.Add(episode.Url, CachedValue{}.New(episode))
 		}
 	})
 
@@ -242,7 +242,17 @@ func startApiServer(host string, port int) {
 			}
 		}
 
-		video := provider.GetVideo(&blb.Episode{Url: epurl})
+		// Check for cached episode
+		episode := blb.Episode{Url: epurl}
+		if cacheMap, ok := cache[providerName]; ok {
+			if cached, ok := cacheMap.episode_cache.Get(epurl); ok {
+				if value, ok := cached.(CachedValue).Get(); ok {
+					episode = value.(blb.Episode)
+				}
+			}
+		}
+
+		video := provider.GetVideo(&episode)
 		c.JSON(http.StatusOK, video)
 
 		// Store on cache
