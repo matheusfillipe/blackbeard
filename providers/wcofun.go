@@ -176,6 +176,6 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 	}
 
 	videoRequest := blackbeard.Request{Url: url, Headers: UserAgent}
-	episode.Video = blackbeard.Video{Request: videoRequest, Format: "mp4", Name: blackbeard.SanitizeFilename(episode.Title)}
+	episode.Video = blackbeard.Video{Request: videoRequest, Format: "mp4", Name: blackbeard.SanitizeFilename(episode.Title) + ".mp4"}
 	return episode.Video
 }

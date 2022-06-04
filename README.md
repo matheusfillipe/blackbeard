@@ -18,6 +18,10 @@ go install github.com/matheusfillipe/blackbeard@latest
 
 Then check the help with `blackbeard -h`
 
+# Usage
+
+You can run or connect to an api using either `-api` or `-connect`. You can also adjust `-port` and `-host`. If you just run it without arguments you will have an interactive fuzzy interface similar to fzf that will let you download whatever episode. You can mark multiple episodes by hitting or holding `TAB`.
+
 # Disclaimer
 
 The app is purely for educational and personal use. It merely scrapes 3rd-party websites that are publicly accessible via any regular web browser. It is the responsibility of user to avoid any actions that might violate the laws governing his/her locality. Use this at your own risk.

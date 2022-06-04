@@ -6,10 +6,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/c-bata/go-prompt"
 	"github.com/ktr0731/go-fuzzyfinder"
+	blb "github.com/matheusfillipe/blackbeard/blb"
 	"github.com/matheusfillipe/blackbeard/providers"
 )
 
@@ -21,15 +23,7 @@ func completer(d prompt.Document) []prompt.Suggest {
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 }
 
-func main() {
-	apiMode := flag.Bool("api", false, "Start api")
-	apiPort := flag.Int("port", 8080, "Port to bind to")
-	apiHost := flag.String("host", "0.0.0.0", "Host to bind to")
-	flag.Parse()
-	if *apiMode {
-		startApiServer(*apiHost, *apiPort)
-		return
-	}
+func downloadCli() {
 	providers := providers.GetProviders()
 	providerNames := make([]string, len(providers))
 	i := 0
@@ -51,7 +45,7 @@ func main() {
 	providerName := providerNames[idx]
 	provider := providers[providerName]
 
-	fmt.Println("Choose show/anime to search for: ")
+	fmt.Println("Search show/anime: ")
 	t := prompt.Input("> ", completer)
 	shows := provider.SearchShows(t)
 
@@ -64,18 +58,21 @@ func main() {
 			if i == -1 {
 				return ""
 			}
+			// TODO fix this wrapping
+			w /= 2
+			w -= 10
 			return fmt.Sprintf("Provider: %s\nShow: %s\n\nDescription: %s\n\n\n%s",
 				strings.ToUpper(providerName),
-				shows[i].Title,
-				shows[i].Metadata.Description,
-				shows[i].Metadata.ThumbnailUrl,
+				blb.WrapString(shows[i].Title, uint(w)),
+				blb.WrapString(shows[i].Metadata.Description, uint(w)),
+				blb.WrapStringReguardlessly(shows[i].Metadata.ThumbnailUrl, uint(w)),
 			)
 		}))
 
 	show := shows[idx]
 	episodes := provider.GetEpisodes(&show, "")
 
-	idx, err = fuzzyfinder.Find(
+  idxs, err2 := fuzzyfinder.FindMulti(
 		episodes,
 		func(i int) string {
 			return fmt.Sprintf("%v > %v", episodes[i].Number + 1, episodes[i].Title)
@@ -84,22 +81,62 @@ func main() {
 			if i == -1 {
 				return ""
 			}
+			// TODO fix this wrapping
+			w /= 2
+			w -= 10
 			return fmt.Sprintf("Provider: %s\nShow: %s\nEpisode n. %d\n\nDescription: %s",
 				strings.ToUpper(providerName),
-				show.Title,
+				blb.WrapString(show.Title, uint(w)),
 				episodes[i].Number+1,
-				episodes[i].Metadata.Description,
+				blb.WrapString(episodes[i].Metadata.Description, uint(w)),
 			)
 		}))
 
-	if err != nil {
+	if err2 != nil {
 		log.Fatal(err)
 	}
 
-	episode := episodes[idx]
-	fmt.Printf("Selected: %v\n", episode.Title)
+  // TODO multitask downloads
+  for _, idx := range idxs {
+    idx := idx
+    episode := episodes[idx]
+    fmt.Printf("Selected: %v\n", episode.Title)
 
-	video := provider.GetVideo(&episode)
-	fmt.Print("Downloading: ", video.Request.Url)
-	video.Download()
+    video := provider.GetVideo(&episode)
+    video.Download()
+  }
+}
+
+func apiConnect (host string, port int) {
+  println("Attempting connection to blackbeard api at " + host + ":" + strconv.Itoa(port))
+}
+
+func main() {
+  // API opts
+	apiMode := flag.Bool("api", false, "Start a blackbeard api")
+	apiPort := flag.Int("port", 8080, "Port to bind to if api or to connect to if client. Default: 8080")
+	apiHost := flag.String("host", "0.0.0.0", "Host to bind to if api or to connect to if client. Default: 0.0.0.0")
+
+  // Client opts
+	clientMode := flag.Bool("connect", false, "Start a client that connects to a blackbeard api")
+
+	flag.Parse()
+
+  if *apiMode && *clientMode {
+    log.Fatal("Cannot start api and client at the same time")
+    return
+  }
+
+	if *apiMode {
+		startApiServer(*apiHost, *apiPort)
+		return
+	}
+
+  if *clientMode {
+    apiConnect(*apiHost, *apiPort)
+    return
+  }
+
+	// Interactive cli
+	downloadCli()
 }
