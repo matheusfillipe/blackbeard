@@ -37,7 +37,7 @@ The app is purely for educational and personal use. It merely scrapes 3rd-party 
 # TODO
 
 - [x] Cli arg parsing
-- [ ] http api
+- [x] http api
 - [ ] Profiles that store watch history
 - [x] wcofun provider
 - [ ] 9anime provider
