@@ -72,10 +72,10 @@ func downloadCli() {
 	show := shows[idx]
 	episodes := provider.GetEpisodes(&show, "")
 
-  idxs, err2 := fuzzyfinder.FindMulti(
+	idxs, err2 := fuzzyfinder.FindMulti(
 		episodes,
 		func(i int) string {
-			return fmt.Sprintf("%v > %v", episodes[i].Number + 1, episodes[i].Title)
+			return fmt.Sprintf("%v > %v", episodes[i].Number+1, episodes[i].Title)
 		},
 		fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
 			if i == -1 {
@@ -96,46 +96,57 @@ func downloadCli() {
 		log.Fatal(err)
 	}
 
-  // TODO multitask downloads
-  for _, idx := range idxs {
-    idx := idx
-    episode := episodes[idx]
-    fmt.Printf("Selected: %v\n", episode.Title)
-
-    video := provider.GetVideo(&episode)
-    video.Download()
-  }
+	// TODO multitask downloads
+	fmt.Println("...")
+	for _, idx := range idxs {
+		idx := idx
+		episode := episodes[idx]
+		video := provider.GetVideo(&episode)
+		video.Download()
+	}
 }
 
-func apiConnect (host string, port int) {
-  println("Attempting connection to blackbeard api at " + host + ":" + strconv.Itoa(port))
+func apiConnect(host string, port int) {
+	println("Attempting connection to blackbeard api at " + host + ":" + strconv.Itoa(port))
 }
+
+var Version = "development"
+var BuildDate = "development"
 
 func main() {
-  // API opts
+	// API opts
 	apiMode := flag.Bool("api", false, "Start a blackbeard api")
 	apiPort := flag.Int("port", 8080, "Port to bind to if api or to connect to if client. Default: 8080")
 	apiHost := flag.String("host", "0.0.0.0", "Host to bind to if api or to connect to if client. Default: 0.0.0.0")
 
-  // Client opts
+	// Client opts
 	clientMode := flag.Bool("connect", false, "Start a client that connects to a blackbeard api")
+
+	version := flag.Bool("version", false, "Prints the version then exits")
 
 	flag.Parse()
 
-  if *apiMode && *clientMode {
-    log.Fatal("Cannot start api and client at the same time")
-    return
-  }
+	if *version {
+		fmt.Println("Blackbeard")
+		fmt.Println("Version: ", Version)
+		fmt.Println("Date: ", BuildDate)
+		return
+	}
+
+	if *apiMode && *clientMode {
+		log.Fatal("Cannot start api and client at the same time")
+		return
+	}
 
 	if *apiMode {
 		startApiServer(*apiHost, *apiPort)
 		return
 	}
 
-  if *clientMode {
-    apiConnect(*apiHost, *apiPort)
-    return
-  }
+	if *clientMode {
+		apiConnect(*apiHost, *apiPort)
+		return
+	}
 
 	// Interactive cli
 	downloadCli()
