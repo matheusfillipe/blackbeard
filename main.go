@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"log"
@@ -15,6 +16,9 @@ import (
 	"github.com/matheusfillipe/blackbeard/providers"
 )
 
+var Version = "development"
+var BuildDate = "development"
+
 func completer(d prompt.Document) []prompt.Suggest {
 	// TODO read from cache
 	s := []prompt.Suggest{
@@ -25,12 +29,7 @@ func completer(d prompt.Document) []prompt.Suggest {
 
 func downloadCli() {
 	providers := providers.GetProviders()
-	providerNames := make([]string, len(providers))
-	i := 0
-	for name := range providers {
-		providerNames[i] = name
-		i++
-	}
+	providerNames := blb.Keys(providers)
 
 	idx, err := fuzzyfinder.Find(
 		providerNames,
@@ -49,6 +48,7 @@ func downloadCli() {
 	t := prompt.Input("> ", completer)
 	shows := provider.SearchShows(t)
 
+	// TODO put this in another function and reuse in apiClient
 	idx, err = fuzzyfinder.Find(
 		shows,
 		func(i int) string {
@@ -72,6 +72,7 @@ func downloadCli() {
 	show := shows[idx]
 	episodes := provider.GetEpisodes(&show, "")
 
+	// TODO put this in another function and reuse in apiClient
 	idxs, err2 := fuzzyfinder.FindMulti(
 		episodes,
 		func(i int) string {
@@ -107,11 +108,31 @@ func downloadCli() {
 }
 
 func apiConnect(host string, port int) {
-	println("Attempting connection to blackbeard api at " + host + ":" + strconv.Itoa(port))
-}
+  url := "http://" + host + ":" + strconv.Itoa(port) + "/"
+	println("Attempting connection to blackbeard api at " + url)
 
-var Version = "development"
-var BuildDate = "development"
+  // Check if there is a valid reply
+  request := blb.Request{Url: url + "version"}
+  res, ok := blb.Perform(request)
+  if !ok {
+    log.Fatal("Connection failed")
+  }
+  body := res.Body
+  defer body.Close()
+  buf := new(bytes.Buffer)
+  buf.ReadFrom(body)
+  println(buf.String())
+  if strings.Contains(buf.String(), "version") {
+    println("Connection successful")
+  } else {
+    log.Fatal("Connection failed")
+  }
+
+  providers := struct {Providers []string `json:"providers"`}{}
+  request.Url = url + "providers"
+  blb.GetJson(request, &providers)
+  fmt.Println("Providers:" + strings.Join(providers.Providers, ", "))
+}
 
 func main() {
 	// API opts

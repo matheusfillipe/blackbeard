@@ -31,6 +31,17 @@ func MergeMaps[K comparable, V any](maps ...map[K]V) map[K]V {
 	return res
 }
 
+// Return list of keys of a map
+func Keys[K comparable, V any](m map[K]V) []K {
+	keys := make([]K, len(m))
+	i := 0
+	for name := range m {
+		keys[i] = name
+		i++
+	}
+	return keys
+}
+
 // Perform a request using standart http
 func Perform(request Request) (*http.Response, bool) {
 	// Defaults to get request
