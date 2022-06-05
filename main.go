@@ -216,9 +216,16 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	}
 }
 
-func apiConnect(host string, port int) {
-	url := "http://" + host + ":" + strconv.Itoa(port) + "/"
-	println("Attempting connection to blackbeard api at " + url)
+func apiConnect(url string) {
+	if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+		url = "http://" + url
+	}
+
+	if !strings.HasSuffix(url, "/") {
+		url += "/"
+	}
+
+	fmt.Printf("Attempting connection to blackbeard api at %q\n", url)
 
 	// Check if there is a valid reply
 	request := blb.Request{Url: url + "version"}
@@ -251,11 +258,11 @@ func main() {
 
 	// API opts
 	apiMode := flag.Bool("api", false, "Start a blackbeard api")
-	apiPort := flag.Int("port", defaultPort, "Port to bind to if api or to connect to if client. Default: 8080")
-	apiHost := flag.String("host", "0.0.0.0", "Host to bind to if api or to connect to if client. Default: 0.0.0.0")
+	apiPort := flag.Int("port", defaultPort, "Port to bind to if api. Will also read 'PORT' from env. Default: 8080")
+	apiHost := flag.String("host", "0.0.0.0", "Host to bind to if api. Default: 0.0.0.0")
 
 	// Client opts
-	clientMode := flag.Bool("connect", false, "Start a client that connects to a blackbeard api")
+	connectAddr := flag.String("connect", "0.0.0.0:8080", "Start a client that connects to a blackbeard api with the given address.")
 
 	version := flag.Bool("version", false, "Prints the version then exits")
 
@@ -268,7 +275,7 @@ func main() {
 		return
 	}
 
-	if *apiMode && *clientMode {
+	if *apiMode && connectAddr == nil {
 		log.Fatal("Cannot start api and client at the same time")
 		return
 	}
@@ -278,8 +285,8 @@ func main() {
 		return
 	}
 
-	if *clientMode {
-		apiConnect(*apiHost, *apiPort)
+	if connectAddr != nil {
+		apiConnect(*connectAddr)
 		return
 	}
 
