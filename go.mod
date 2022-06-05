@@ -3,6 +3,8 @@ module github.com/matheusfillipe/blackbeard
 // +heroku goVersion go1.18
 go 1.18
 
+// +heroku install github.com/matheusfillipe/blackbeard
+
 require github.com/gocolly/colly v1.2.0
 
 require (
