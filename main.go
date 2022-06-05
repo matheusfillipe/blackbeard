@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 
@@ -19,6 +20,8 @@ import (
 
 var Version = "development"
 var BuildDate = "development"
+
+const DEFAULT_PORT = 8080
 
 func completer(d prompt.Document) []prompt.Suggest {
 	// TODO read from cache
@@ -241,9 +244,14 @@ func apiConnect(host string, port int) {
 }
 
 func main() {
+	defaultPort, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil {
+		defaultPort = DEFAULT_PORT
+	}
+
 	// API opts
 	apiMode := flag.Bool("api", false, "Start a blackbeard api")
-	apiPort := flag.Int("port", 8080, "Port to bind to if api or to connect to if client. Default: 8080")
+	apiPort := flag.Int("port", defaultPort, "Port to bind to if api or to connect to if client. Default: 8080")
 	apiHost := flag.String("host", "0.0.0.0", "Host to bind to if api or to connect to if client. Default: 0.0.0.0")
 
 	// Client opts
