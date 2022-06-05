@@ -55,6 +55,12 @@ jobs:
           paths:
             - "/go/pkg/mod"
       - run:
+          name: Ubuntu setup
+          command: |
+            sudo dpkg --add-architecture i386
+            sudo apt update
+            sudo apt install gcc-multilib libcurl4-openssl-dev:i386 libcurl4-openssl-dev
+      - run:
           name: Linux Build
           command: bash .circleci/build.sh linux amd64 386
       - run:
