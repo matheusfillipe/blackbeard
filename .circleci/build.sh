@@ -16,6 +16,5 @@ echo "Platform $platform"
 for arch in ${archs[@]}
 do
     echo "  Building $arch"
-    mkdir $arch
     env GOOS=${platform} GOARCH=${arch} CGO_ENABLED=1 go build -ldflags="-X 'main.Version=$version' -X 'main.BuildDate=$(date -u)'" -o "build/$arch/blackbeard"
 done
