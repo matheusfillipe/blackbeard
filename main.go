@@ -256,13 +256,15 @@ func main() {
 		defaultPort = DEFAULT_PORT
 	}
 
+	const default_host = "0.0.0.0:8080"
+
 	// API opts
 	apiMode := flag.Bool("api", false, "Start a blackbeard api")
 	apiPort := flag.Int("port", defaultPort, "Port to bind to if api. Will also read 'PORT' from env. Default: 8080")
 	apiHost := flag.String("host", "0.0.0.0", "Host to bind to if api. Default: 0.0.0.0")
 
 	// Client opts
-	connectAddr := flag.String("connect", "0.0.0.0:8080", "Start a client that connects to a blackbeard api with the given address.")
+	connectAddr := flag.String("connect", "", "Start a client that connects to a blackbeard api with the given address.")
 
 	version := flag.Bool("version", false, "Prints the version then exits")
 
@@ -275,7 +277,7 @@ func main() {
 		return
 	}
 
-	if *apiMode && connectAddr == nil {
+	if *apiMode && *connectAddr == "" {
 		log.Fatal("Cannot start api and client at the same time")
 		return
 	}
@@ -285,7 +287,7 @@ func main() {
 		return
 	}
 
-	if connectAddr != nil {
+	if *connectAddr != "" {
 		apiConnect(*connectAddr)
 		return
 	}

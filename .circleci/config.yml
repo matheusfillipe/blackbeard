@@ -58,11 +58,13 @@ jobs:
           name: Ubuntu setup
           command: |
             sudo dpkg --add-architecture i386
+            sudo dpkg --add-architecture arm
+            sudo dpkg --add-architecture arm64
             sudo apt update
-            sudo apt install gcc-multilib libcurl4-openssl-dev:i386 libcurl4-openssl-dev
+            sudo apt install gcc-multilib libcurl4-openssl-dev:i386 libcurl4-openssl-dev gcc make gcc-arm-linux-gnueabi binutils-arm-linux-gnueabi gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
       - run:
           name: Linux Build
-          command: bash .circleci/build.sh linux amd64 386
+          command: bash .circleci/build.sh linux amd64 386 arm amd64
       - run:
           name: Github release
-          command: bash .circleci/release.sh -delete linux amd64 386
+          command: bash .circleci/release.sh -delete linux amd64 386 arm amd64
