@@ -8,7 +8,15 @@ workflows:
             tags:
               only: /.*/
 
-      - gh-release:
+      - linux-gh-release:
+          requires:
+            - build-and-test
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*$/
+            branches:
+              ignore: /.*/
+      - mac-gh-release:
           requires:
             - build-and-test
           filters:
@@ -39,7 +47,8 @@ jobs:
           command: |
             cd blb
             go test -v
-  gh-release:
+
+  linux-gh-release:
     docker:
       - image: cimg/go:1.18.3
     steps:
@@ -61,10 +70,10 @@ jobs:
             sudo dpkg --add-architecture arm
             sudo dpkg --add-architecture arm64
             sudo apt update
-            sudo apt install gcc-multilib libcurl4-openssl-dev:i386 libcurl4-openssl-dev gcc make gcc-arm-linux-gnueabi binutils-arm-linux-gnueabi gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+            sudo apt install gcc-multilib libcurl4-openssl-dev:i386 libcurl4-openssl-dev
       - run:
           name: Linux Build
-          command: bash .circleci/build.sh linux amd64 386 arm amd64
+          command: bash .circleci/build.sh linux amd64 386
       - run:
           name: Github release
-          command: bash .circleci/release.sh -delete linux amd64 386 arm amd64
+          command: bash .circleci/release.sh -delete linux amd64 386
