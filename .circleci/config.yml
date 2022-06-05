@@ -1,6 +1,25 @@
 version: 2.1
+
+workflows:
+  build_and_deploy:
+    jobs:
+      - build-and-test:
+          filters:
+            tags:
+              only: /.*/
+
+      - gh-release:
+          requires:
+            - build-and-test
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*$/
+            branches:
+              ignore: /.*/
+
+
 jobs:
-  build:
+  build-and-test:
     docker:
       - image: cimg/go:1.18.3
     steps:
@@ -17,4 +36,27 @@ jobs:
             - "/go/pkg/mod"
       - run:
           name: Run tests
-          command: cd blb; go test -v
+          command: |
+            cd blb
+            go test -v
+  gh-release:
+    docker:
+      - image: cimg/go:1.18.3
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v4-{{ checksum "go.sum" }}
+      - run:
+          name: Install Dependencies
+          command: go get ./...
+      - save_cache:
+          key: go-mod-v4-{{ checksum "go.sum" }}
+          paths:
+            - "/go/pkg/mod"
+      - run:
+          name: Linux Build
+          command: bash .circleci/build.sh linux amd64 386
+      - run:
+          name: Github release
+          command: bash .circleci/release.sh -delete linux amd64 386
