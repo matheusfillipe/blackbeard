@@ -306,7 +306,7 @@ func main() {
 		return
 	}
 
-	if *apiMode && *connectAddr == "" {
+	if *apiMode && *connectAddr != "" {
 		log.Fatal("Cannot start api and client at the same time")
 		return
 	}
