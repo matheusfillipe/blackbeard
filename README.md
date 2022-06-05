@@ -1,3 +1,5 @@
+[![CircleCI Build Status](https://circleci.com/gh/matheusfillipe/blackbeard.svg?style=shield)](https://circleci.com/gh/matheusfillipe/blackbeard)
+
 # blackbeard
 
 Api and cli that scrapes content from video providers.
