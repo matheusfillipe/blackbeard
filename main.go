@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"os/user"
 	"strconv"
 	"strings"
 
@@ -20,8 +21,28 @@ import (
 
 var Version = "development"
 var BuildDate = "development"
+var profile string = "default"
 
 const DEFAULT_PORT = 8080
+
+func createCache() {
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	cacheDir := usr.HomeDir + "/.cache/blackbeard/" + blb.SanitizeFilename(profile)
+	os.MkdirAll(cacheDir, 0755)
+	cacheFile := cacheDir + "/cache.db"
+	// Create db file if doesn't exist
+	_, err = os.Stat(cacheFile)
+	if os.IsNotExist(err) {
+		file, err := os.Create("history.db")
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		file.Close()
+	}
+}
 
 func completer(d prompt.Document) []prompt.Suggest {
 	// TODO read from cache
@@ -157,7 +178,6 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	}
 	shows := flow.searchShows(t)
 
-	// TODO put this in another function and reuse in apiClient
 	idx, err = fuzzyfinder.Find(
 		shows,
 		func(i int) string {
@@ -181,7 +201,6 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	show := shows[idx]
 	episodes := flow.getEpisodes(show)
 
-	// TODO put this in another function and reuse in apiClient
 	idxs, err2 := fuzzyfinder.FindMulti(
 		episodes,
 		func(i int) string {
@@ -256,6 +275,12 @@ func main() {
 		defaultPort = DEFAULT_PORT
 	}
 
+	username := "default"
+	user, err := user.Current()
+	if err != nil {
+		username = user.Username
+	}
+
 	const default_host = "0.0.0.0:8080"
 
 	// API opts
@@ -265,10 +290,14 @@ func main() {
 
 	// Client opts
 	connectAddr := flag.String("connect", "", "Start a client that connects to a blackbeard api with the given address.")
+	profileName := flag.String("profile", username, "Use a different profile folder")
 
 	version := flag.Bool("version", false, "Prints the version then exits")
 
 	flag.Parse()
+
+	profile = *profileName
+	createCache()
 
 	if *version {
 		fmt.Println("Blackbeard")
