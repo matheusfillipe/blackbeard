@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,7 +20,28 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/cavaliergopher/grab/v3"
 	"github.com/kennygrant/sanitize"
+	runewidth "github.com/mattn/go-runewidth"
+	"golang.org/x/exp/constraints"
 )
+
+type Number interface {
+	constraints.Integer | constraints.Float
+}
+
+// hacky debug log that writes to /tmp/debug.txt
+// tail -f /tmp/debug.txt
+func DebugLog(vars ...any) {
+	f, err := os.OpenFile("/tmp/debug.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+	for _, i := range vars {
+		f.WriteString(fmt.Sprintf("%+v", i))
+	}
+	f.WriteString("\n")
+    defer f.Close()
+}
 
 func MergeMaps[K comparable, V any](maps ...map[K]V) map[K]V {
 	res := map[K]V{}
@@ -249,7 +271,7 @@ const nbsp = 0xA0
 // version of the library will implement smarter wrapping. This means that
 // pathological cases can dramatically reach past the limit, such as a very
 // long word.
-func WrapString(s string, lim uint) string {
+func WrapString(s string, wantedWidth uint) string {
 	// Initialize a buffer with a slightly larger size to account for breaks
 	init := make([]byte, 0, len(s))
 	buf := bytes.NewBuffer(init)
@@ -257,6 +279,8 @@ func WrapString(s string, lim uint) string {
 	var current uint
 	var wordBuf, spaceBuf bytes.Buffer
 	var wordBufLen, spaceBufLen uint
+	lim := Max(uint(runewidth.StringWidth(s))/wantedWidth, 1) // Number of lines
+	lim = uint(len(s)) / lim                                  // Number of characters per line
 
 	for _, char := range s {
 		if char == '\n' {
@@ -319,15 +343,17 @@ func WrapString(s string, lim uint) string {
 }
 
 // Wrap reguardles of spaces
-func WrapStringReguardlessly(s string, width uint) string {
+func WrapStringReguardlessly(s string, wantedWidth int) string {
 	// Initialize a buffer with a slightly larger size to account for breaks
 	init := make([]byte, 0, len(s))
 	buf := bytes.NewBuffer(init)
+	DebugLog(wantedWidth)
+	DebugLog(runewidth.StringWidth(s))
 
-	var count uint
+	var count int
 
 	for _, char := range s {
-		if count+1 > uint(width) {
+		if count >= wantedWidth {
 			buf.WriteRune('\n')
 			count = 0
 		} else if char == '\n' {
@@ -335,10 +361,55 @@ func WrapStringReguardlessly(s string, width uint) string {
 			count = 0
 		} else {
 			buf.WriteRune(char)
-			count++
+			count += runewidth.RuneWidth(char)
 		}
 	}
+	DebugLog("---------------")
 
 	return buf.String()
 
+}
+
+// Finds the maximum value among the arguments
+func Max[T Number](vars ...T) T {
+	max := vars[0]
+
+	for _, i := range vars {
+		if max < i {
+			max = i
+		}
+	}
+
+	return max
+}
+
+// Finds the minimum value among the arguments
+func Min[T Number](vars ...T) T {
+	min := vars[0]
+
+	for _, i := range vars {
+		if min > i {
+			min = i
+		}
+	}
+
+	return min
+}
+
+// Sums all arguments
+func Sum[T Number](vars ...T) T {
+	var result T
+	for _, value := range vars {
+		result += value
+	}
+	return result
+}
+
+// Run function for each element array, modifying it
+func Map[T Number, O Number](vars []T, f func(v T) O) []O {
+	var result []O
+	for _, value := range vars {
+		result = append(result, f(value))
+	}
+	return result
 }

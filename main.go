@@ -14,29 +14,29 @@ import (
 	"strings"
 
 	"github.com/c-bata/go-prompt"
-	"github.com/matheusfillipe/go-fuzzyfinder"
 	blb "github.com/matheusfillipe/blackbeard/blb"
 	"github.com/matheusfillipe/blackbeard/providers"
+	"github.com/matheusfillipe/go-fuzzyfinder"
 )
 
 var Version = "development"
 var BuildDate = "development"
-var profile string = "default"
 
 const DEFAULT_PORT = 8080
 
-func createCache() {
+func createCache(profile string) {
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
 	}
-	cacheDir := usr.HomeDir + "/.cache/blackbeard/" + blb.SanitizeFilename(profile)
+	cacheDir := usr.HomeDir + "/.cache/blackbeard/" + profile + "/"
 	os.MkdirAll(cacheDir, 0755)
 	cacheFile := cacheDir + "/cache.db"
+
 	// Create db file if doesn't exist
 	_, err = os.Stat(cacheFile)
 	if os.IsNotExist(err) {
-		file, err := os.Create("history.db")
+		file, err := os.Create(cacheDir + "history.db")
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -187,14 +187,13 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 			if i == -1 {
 				return ""
 			}
-			// TODO fix this wrapping
-			w /= 2
-			w -= 10
+			// Give some safety margin
+			w = w/2 - 12
 			return fmt.Sprintf("Provider: %s\nShow: %s\n\nDescription: %s\n\n\n%s",
 				strings.ToUpper(providerName),
 				blb.WrapString(shows[i].Title, uint(w)),
 				blb.WrapString(shows[i].Metadata.Description, uint(w)),
-				blb.WrapStringReguardlessly(shows[i].Metadata.ThumbnailUrl, uint(w)),
+				blb.WrapStringReguardlessly(shows[i].Metadata.ThumbnailUrl, w),
 			)
 		}))
 
@@ -210,9 +209,8 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 			if i == -1 {
 				return ""
 			}
-			// TODO fix this wrapping
-			w /= 2
-			w -= 10
+			// Give some safety margin
+			w = w/2 - 12
 			return fmt.Sprintf("Provider: %s\nShow: %s\nEpisode n. %d\n\nDescription: %s",
 				strings.ToUpper(providerName),
 				blb.WrapString(show.Title, uint(w)),
@@ -277,27 +275,26 @@ func main() {
 
 	username := "default"
 	user, err := user.Current()
-	if err != nil {
-		username = user.Username
+	if err == nil {
+		username = blb.SanitizeFilename(user.Username)
 	}
 
 	const default_host = "0.0.0.0:8080"
 
 	// API opts
 	apiMode := flag.Bool("api", false, "Start a blackbeard api")
-	apiPort := flag.Int("port", defaultPort, "Port to bind to if api. Will also read 'PORT' from env. Default: 8080")
-	apiHost := flag.String("host", "0.0.0.0", "Host to bind to if api. Default: 0.0.0.0")
+	apiPort := flag.Int("port", defaultPort, "Port to bind to if api. Will also read 'PORT' from env.")
+	apiHost := flag.String("host", "0.0.0.0", "Host to bind to if api.")
 
 	// Client opts
 	connectAddr := flag.String("connect", "", "Start a client that connects to a blackbeard api with the given address.")
-	profileName := flag.String("profile", username, "Use a different profile folder")
+	profileName := flag.String("profile", username, "Use a different profile folder.")
 
 	version := flag.Bool("version", false, "Prints the version then exits")
 
 	flag.Parse()
 
-	profile = *profileName
-	createCache()
+	createCache(*profileName)
 
 	if *version {
 		fmt.Println("Blackbeard")
