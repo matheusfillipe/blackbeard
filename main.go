@@ -92,6 +92,11 @@ type apiFlow struct {
 type apiProvider struct {
 	Name        string
 	BaseRequest blb.Request
+	info        blb.ProviderInfo
+}
+
+func (a apiProvider) Info() blb.ProviderInfo {
+	return a.info
 }
 
 func (a apiProvider) SearchShows(query string) []blb.Show {
@@ -139,6 +144,7 @@ func (flow *apiFlow) setProvider(provider blb.VideoProvider, name string) {
 	prov := provider.(apiProvider)
 	prov.BaseRequest = flow.baseRequest
 	prov.Name = name
+	prov.info = provider.Info()
 	flow.provider = prov
 }
 

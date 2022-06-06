@@ -10,6 +10,11 @@ import (
 
 type NineAnime struct{}
 
+
+func (a NineAnime) Info() blackbeard.ProviderInfo {
+	return blackbeard.ProviderInfo{Name: "9anime"}
+}
+
 func (a NineAnime) SearchShows(query string) []blackbeard.Show {
 	rootUrl := "https://9anime.vc"
 	url := rootUrl + "/search?keyword=" + url.QueryEscape(query)

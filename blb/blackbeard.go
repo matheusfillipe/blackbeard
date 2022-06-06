@@ -29,10 +29,16 @@ type Video struct {
 	Metadata Metadata
 }
 
+type ProviderInfo struct {
+	Name   string
+	Movie bool
+}
+
 type VideoProvider interface {
 	SearchShows(string) []Show
 	GetEpisodes(*Show) []Episode
 	GetVideo(*Episode) Video
+	Info() ProviderInfo
 }
 
 type Request struct {

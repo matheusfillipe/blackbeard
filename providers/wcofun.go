@@ -26,6 +26,11 @@ type CdnResponse struct {
 	Hd     string `json:"hd"`
 }
 
+
+func (a Wcofun) Info() blackbeard.ProviderInfo {
+	return blackbeard.ProviderInfo{Name: "9anime"}
+}
+
 func (a Wcofun) SearchShows(query string) []blackbeard.Show {
 	url := rootUrl + "/search"
 
