@@ -143,7 +143,6 @@ func startApiServer(host string, port int) {
 			},
 		)
 	}
-	fmt.Printf("RES IS: %+v", res)
 	r.GET("/providers", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"providers": res,
