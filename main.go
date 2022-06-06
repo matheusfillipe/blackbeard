@@ -130,8 +130,8 @@ func (a apiProvider) GetVideo(episode *blb.Episode) blb.Video {
 
 func (flow apiFlow) getProviders() map[string]blb.VideoProvider {
 	type Res struct {
-		name string
-		info blb.ProviderInfo
+		Name string
+		Info blb.ProviderInfo
 	}
 	providers := struct {
 		Providers []Res `json:"providers"`
@@ -141,7 +141,7 @@ func (flow apiFlow) getProviders() map[string]blb.VideoProvider {
 
 	resp := make(map[string]blb.VideoProvider)
 	for _, res := range providers.Providers {
-		resp[res.name] = apiProvider{info: res.info}
+		resp[res.Name] = apiProvider{info: res.Info}
 	}
 	return resp
 }
