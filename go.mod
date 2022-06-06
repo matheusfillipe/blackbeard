@@ -8,6 +8,7 @@ go 1.18
 require (
 	github.com/gin-gonic/gin v1.8.0
 	github.com/hashicorp/golang-lru v0.5.4
+	// TODO change back to ktr0731/go-fuzzyfinder when https://github.com/ktr0731/go-fuzzyfinder/pull/153 is merged
 	github.com/matheusfillipe/go-fuzzyfinder v0.6.1
 )
 
@@ -43,7 +44,7 @@ require (
 	github.com/kennygrant/sanitize v1.2.4
 	github.com/ktr0731/go-fuzzyfinder v0.6.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
-	github.com/mattn/go-runewidth v0.0.13 // indirect
+	github.com/mattn/go-runewidth v0.0.13
 	github.com/nsf/termbox-go v0.0.0-20201124104050-ed494de23a00 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect

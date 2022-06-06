@@ -1,4 +1,5 @@
 // Tools to use while scrapping or everywhere
+// Just things I wrote and find useful
 
 package blackbeard
 

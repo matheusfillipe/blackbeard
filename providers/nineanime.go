@@ -12,7 +12,11 @@ type NineAnime struct{}
 
 
 func (a NineAnime) Info() blackbeard.ProviderInfo {
-	return blackbeard.ProviderInfo{Name: "9anime"}
+	return blackbeard.ProviderInfo{
+		Name: "9anime",
+		Url: "https://9anime.vc/",
+		Description: "9anime is a free anime website where millions visit to watch anime online.",
+	}
 }
 
 func (a NineAnime) SearchShows(query string) []blackbeard.Show {

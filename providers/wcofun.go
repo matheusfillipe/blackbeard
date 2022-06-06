@@ -28,7 +28,11 @@ type CdnResponse struct {
 
 
 func (a Wcofun) Info() blackbeard.ProviderInfo {
-	return blackbeard.ProviderInfo{Name: "9anime"}
+	return blackbeard.ProviderInfo{
+		Name: "9anime",
+		Url: "https://www.wcofun.com/",
+		Description: "Watch Cartoons and Anime Online in HD for Free",
+	}
 }
 
 func (a Wcofun) SearchShows(query string) []blackbeard.Show {
