@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/signal"
 	"strings"
 	"time"
 	"unicode"
@@ -34,14 +33,14 @@ type Number interface {
 func DebugLog(vars ...any) {
 	f, err := os.OpenFile("/tmp/debug.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
 
-    if err != nil {
-        log.Fatal(err)
-    }
+	if err != nil {
+		log.Fatal(err)
+	}
 	for _, i := range vars {
 		f.WriteString(fmt.Sprintf("%+v", i))
 	}
 	f.WriteString("\n")
-    defer f.Close()
+	defer f.Close()
 }
 
 func MergeMaps[K comparable, V any](maps ...map[K]V) map[K]V {
@@ -166,7 +165,7 @@ func GetJson[T any](request Request, data T) T {
 	return data
 }
 
-// Downloads a video
+// Downloads a video to the current folder
 func (video Video) Download() bool {
 	// create client
 	client := grab.NewClient()
@@ -189,9 +188,6 @@ func (video Video) Download() bool {
 	t := time.NewTicker(500 * time.Millisecond)
 	defer t.Stop()
 
-	c := make(chan os.Signal, 1)
-	wait := make(chan struct{})
-	signal.Notify(c, os.Interrupt)
 
 	fmt.Println("")
 Loop:
@@ -217,26 +213,6 @@ Loop:
 				float64(resp.Size())/1024/1024,
 				100*resp.Progress())
 
-		case <-c:
-			// manual cancel here
-			fmt.Print("Cancelling")
-
-			// print some dots to indicate waiting period after calling cancel
-			go func() {
-				for {
-					select {
-					case <-wait:
-						return
-					default:
-						fmt.Print(".")
-						time.Sleep(time.Second)
-					}
-				}
-			}()
-
-			cancel()
-			break Loop
-
 		case <-resp.Done:
 			// download is complete
 			break Loop
@@ -251,7 +227,7 @@ Loop:
 
 	// check for errors
 	if err := resp.Err(); err != nil {
-		println("Download failed: %v\n", err.Error())
+		fmt.Printf("Download failed: %v\n", err.Error())
 		return false
 	}
 

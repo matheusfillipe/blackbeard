@@ -17,6 +17,7 @@ import (
 	blb "github.com/matheusfillipe/blackbeard/blb"
 	"github.com/matheusfillipe/blackbeard/providers"
 	"github.com/matheusfillipe/go-fuzzyfinder"
+	"golang.org/x/term"
 )
 
 var Version = "development"
@@ -166,7 +167,31 @@ func (flow apiFlow) getVideo(episode blb.Episode) blb.Video {
 	return flow.provider.GetVideo(&episode)
 }
 
+// Workaround for https://github.com/c-bata/go-prompt/issues/233
+// TODO fork the lib with the patch or remove this when https://github.com/c-bata/go-prompt/pull/239
+// is merged
+var termState *term.State
+
+func saveTermState() {
+	oldState, err := term.GetState(int(os.Stdin.Fd()))
+	if err != nil {
+		return
+	}
+	termState = oldState
+}
+
+func restoreTermState() {
+	if termState != nil {
+		term.Restore(int(os.Stdin.Fd()), termState)
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 func downloadTuiFlow(flow TuiFlowTemplate) {
+	saveTermState()
+	defer restoreTermState()
+
 	providers := flow.getProviders()
 	providerNames := blb.Keys(providers)
 
@@ -202,11 +227,13 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	providerName := providerNames[idx]
 	flow.setProvider(providers[providerName], providerName)
 
-	fmt.Println("Search show/anime/movie (hit tab to autocomplete): ")
+	fmt.Println("Search show/anime/movie (hit tab for history autocomplete): ")
 	t := prompt.Input("> ", completer)
 	if t == "" {
 		log.Fatal("No search query")
 	}
+	restoreTermState()
+
 	shows := flow.searchShows(t)
 
 	idx, err = fuzzyfinder.Find(
@@ -227,6 +254,10 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 				blb.WrapStringReguardlessly(shows[i].Metadata.ThumbnailUrl, w),
 			)
 		}))
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	show := shows[idx]
 	episodes := flow.getEpisodes(show)
@@ -262,7 +293,6 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	}
 
 	// TODO multitask, parallel downloads?
-	fmt.Println("...")
 	for _, idx := range indexes {
 		idx := idx
 		episode := episodes[idx]
