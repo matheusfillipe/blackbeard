@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	"github.com/c-bata/go-prompt"
-	"github.com/ktr0731/go-fuzzyfinder"
+	"github.com/matheusfillipe/go-fuzzyfinder"
 	blb "github.com/matheusfillipe/blackbeard/blb"
 	"github.com/matheusfillipe/blackbeard/providers"
 )
