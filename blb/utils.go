@@ -347,8 +347,6 @@ func WrapStringReguardlessly(s string, wantedWidth int) string {
 	// Initialize a buffer with a slightly larger size to account for breaks
 	init := make([]byte, 0, len(s))
 	buf := bytes.NewBuffer(init)
-	DebugLog(wantedWidth)
-	DebugLog(runewidth.StringWidth(s))
 
 	var count int
 
@@ -364,7 +362,6 @@ func WrapStringReguardlessly(s string, wantedWidth int) string {
 			count += runewidth.RuneWidth(char)
 		}
 	}
-	DebugLog("---------------")
 
 	return buf.String()
 
