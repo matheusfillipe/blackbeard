@@ -131,18 +131,19 @@ func startApiServer(host string, port int) {
 
 	// Providers
 	type Res struct {
-		name string
-		info blb.ProviderInfo
+		Name string
+		Info blb.ProviderInfo
 	}
 	var res []Res
 	for name, prov := range providers {
 		res = append(res,
 			Res{
-				name: name,
-				info: prov.Info(),
+				Name: name,
+				Info: prov.Info(),
 			},
 		)
 	}
+	fmt.Printf("RES IS: %+v", res)
 	r.GET("/providers", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"providers": res,
