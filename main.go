@@ -52,6 +52,8 @@ func completer(d prompt.Document) []prompt.Suggest {
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 }
 
+// This is the flow that both the api and local client go through for downloading a video.
+// Flow as "a sequence of basic steps"
 type TuiFlowTemplate interface {
 	getProviders() map[string]blb.VideoProvider
 	setProvider(provider blb.VideoProvider, name string)
@@ -168,7 +170,26 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 		providerNames,
 		func(i int) string {
 			return providerNames[i]
-		})
+		},
+		fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
+			if i == -1 {
+				return ""
+			}
+			// Give some safety margin
+			w = w / 4
+
+			provider := providers[providerNames[i]]
+			name := provider.Info().Name
+			if name == "" {
+				name = providerNames[i]
+			}
+
+			return fmt.Sprintf("%s\n%s\n\n%s",
+				strings.ToUpper(name),
+				blb.WrapString(provider.Info().Description, uint(w)),
+				blb.WrapStringReguardlessly(provider.Info().Url, w),
+			)
+		}))
 
 	if err != nil {
 		log.Fatal(err)
@@ -177,7 +198,7 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	providerName := providerNames[idx]
 	flow.setProvider(providers[providerName], providerName)
 
-	fmt.Println("Search show/anime: ")
+	fmt.Println("Search show/anime/movie (hit tab to autocomplete): ")
 	t := prompt.Input("> ", completer)
 	if t == "" {
 		log.Fatal("No search query")
@@ -205,33 +226,40 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 
 	show := shows[idx]
 	episodes := flow.getEpisodes(show)
+	var indexes []int
 
-	idxs, err2 := fuzzyfinder.FindMulti(
-		episodes,
-		func(i int) string {
-			return fmt.Sprintf("%v > %v", episodes[i].Number+1, episodes[i].Title)
-		},
-		fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
-			if i == -1 {
-				return ""
-			}
-			// Give some safety margin
-			w = w/2 - 12
-			return fmt.Sprintf("Provider: %s\nShow: %s\nEpisode n. %d\n\nDescription: %s",
-				strings.ToUpper(providerName),
-				blb.WrapString(show.Title, uint(w)),
-				episodes[i].Number+1,
-				blb.WrapString(episodes[i].Metadata.Description, uint(w)),
-			)
-		}))
+	// if show is movie we can skip the episode list
+	if show.IsMovie {
+		indexes = []int{0}
+	} else {
+		idxs, err2 := fuzzyfinder.FindMulti(
+			episodes,
+			func(i int) string {
+				return fmt.Sprintf("%v > %v", episodes[i].Number+1, episodes[i].Title)
+			},
+			fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
+				if i == -1 {
+					return ""
+				}
+				// Give some safety margin
+				w = w/2 - 12
+				return fmt.Sprintf("Provider: %s\nShow: %s\nEpisode n. %d\n\nDescription: %s",
+					strings.ToUpper(providerName),
+					blb.WrapString(show.Title, uint(w)),
+					episodes[i].Number+1,
+					blb.WrapString(episodes[i].Metadata.Description, uint(w)),
+				)
+			}))
 
-	if err2 != nil {
-		log.Fatal(err)
+		if err2 != nil {
+			log.Fatal(err)
+		}
+		indexes = idxs
 	}
 
-	// TODO multitask, parallel downloads
+	// TODO multitask, parallel downloads?
 	fmt.Println("...")
-	for _, idx := range idxs {
+	for _, idx := range indexes {
 		idx := idx
 		episode := episodes[idx]
 		video := flow.getVideo(episode)
