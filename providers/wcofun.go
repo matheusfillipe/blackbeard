@@ -13,13 +13,13 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-var UserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"}
+var wcofunUserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"}
 
-const rootUrl = "https://www.wcofun.com"
+const wcofunRootUrl = "https://www.wcofun.com"
 
 type Wcofun struct{}
 
-type CdnResponse struct {
+type WcofunCdnResponse struct {
 	Cdn    string `json:"cdn"`
 	Enc    string `json:"enc"`
 	Server string `json:"server"`
@@ -37,7 +37,7 @@ func (a Wcofun) Info() blackbeard.ProviderInfo {
 }
 
 func (a Wcofun) SearchShows(query string) []blackbeard.Show {
-	url := rootUrl + "/search"
+	url := wcofunRootUrl + "/search"
 
 	// Find shows
 	var shows []blackbeard.Show
@@ -45,7 +45,7 @@ func (a Wcofun) SearchShows(query string) []blackbeard.Show {
 	request := blackbeard.Request{
 		Url:     url,
 		Method:  "POST",
-		Headers: UserAgent,
+		Headers: wcofunUserAgent,
 		Curl:    true,
 		Body: map[string]string{
 			"catara":  query,
@@ -68,7 +68,7 @@ func (a Wcofun) GetEpisodes(show *blackbeard.Show) []blackbeard.Episode {
 	url := show.Url
 	request := blackbeard.Request{
 		Url:     url,
-		Headers: UserAgent,
+		Headers: wcofunUserAgent,
 		Curl:    true,
 	}
 
@@ -94,7 +94,7 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 	url := episode.Url
 	request := blackbeard.Request{
 		Url:     url,
-		Headers: UserAgent,
+		Headers: wcofunUserAgent,
 		Curl:    true,
 	}
 
@@ -149,7 +149,7 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 		return blackbeard.Video{Request: blackbeard.Request{Url: url}, Format: "mp4"}
 	}
 
-	next_path = rootUrl + next_path
+	next_path = wcofunRootUrl + next_path
 
 	// Get api url
 	request.Url = next_path
@@ -164,11 +164,11 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 		apiPath = _url[0][1]
 	})
 
-	apiPath = rootUrl + apiPath
+	apiPath = wcofunRootUrl + apiPath
 
 	// Request the api
 	request.Url = apiPath
-	request.Headers["Referer"] = rootUrl
+	request.Headers["Referer"] = wcofunRootUrl
 	request.Headers["authority"] = "www.wcofun.com"
 	request.Headers["pragma"] = "no-cache"
 	request.Headers["cache-control"] = "no-cache"
@@ -179,13 +179,13 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 	request.Headers["sec-fetch-dest"] = "empty"
 	request.Headers["accept-language"] = "en-US,en;q=0.9"
 
-	data := CdnResponse{}
+	data := WcofunCdnResponse{}
 	blackbeard.GetJson(request, &data)
 	if data.Cdn != "" && data.Enc != "" {
 		url = data.Cdn + "/getvid?evid=" + data.Enc
 	}
 
-	videoRequest := blackbeard.Request{Url: url, Headers: UserAgent}
+	videoRequest := blackbeard.Request{Url: url, Headers: wcofunUserAgent}
 	episode.Video = blackbeard.Video{Request: videoRequest, Format: "mp4", Name: blackbeard.SanitizeFilename(episode.Title) + ".mp4"}
 	return episode.Video
 }
