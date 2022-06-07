@@ -39,6 +39,46 @@ You can test this without having to compile curl-impersonate using the heroku ap
 blackbeard -connect https://blackbeardapi.herokuapp.com/
 ```
 
+# Example usage
+
+**List providers**
+
+``` sh
+blackbeard -list
+```
+
+
+
+**Search and output to stdout**
+
+``` sh
+blackbeard -provider wcofun -search "attack on titan" -list
+```
+
+If you remove the `-list` it will go to the fzf prompt and proceed to download
+
+**List episodes for a show**
+
+``` sh
+blackbeard -provider wcofun -search "attack on titan" -show 1 -list
+```
+
+
+**Download an ep directly, no prompt**
+
+``` sh
+blackbeard -provider wcofun -search "attack on titan" -show 1 -ep 1
+```
+
+
+**Download all episodes with 4 downloads in parallel using the api to scrape**
+
+``` sh
+blackbeard -provider wcofun -search "attack on titan" -show 1 -D -x 4 -connect https://blackbeardapi.herokuapp.com/
+```
+
+
+
 # Disclaimer
 
 The app is purely for educational and personal use. It merely scrapes 3rd-party websites that are publicly accessible via any regular web browser. It is the responsibility of user to avoid any actions that might violate the laws governing his/her locality. Use this at your own risk.

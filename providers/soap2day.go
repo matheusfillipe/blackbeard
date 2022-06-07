@@ -51,7 +51,7 @@ func (a Soap2day) SearchShows(query string) []blackbeard.Show {
 			"search_start": "0",
 			"full_search":  "0",
 			"result_from":  "1",
-			"story":        "sonic",
+			"story":        query,
 		},
 	}
 
@@ -91,7 +91,7 @@ func (a Soap2day) GetEpisodes(show *blackbeard.Show) []blackbeard.Episode {
 	}
 
 	blackbeard.ScrapePage(request, ".player-iframelist > li", func(i int, s *goquery.Selection) {
-		title := strconv.Itoa(i+1)
+		title := strconv.Itoa(i + 1)
 		href := s.AttrOr("data-playerlink", "")
 		show.Episodes = append(show.Episodes, blackbeard.Episode{Title: title, Url: href, Number: i})
 	})
