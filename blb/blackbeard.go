@@ -58,6 +58,8 @@ type ProviderInfo struct {
   Url string
   // Description for the provider
   Description string
+	// If true, then better use curl-impersonate
+	Cloudflared bool
 }
 
 // Interface for video providers

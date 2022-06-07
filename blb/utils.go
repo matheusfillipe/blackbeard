@@ -4,6 +4,7 @@
 package blackbeard
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -32,6 +33,7 @@ type Number interface {
 // tail -f /tmp/debug.txt
 func DebugLog(vars ...any) {
 	f, err := os.OpenFile("/tmp/debug.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0755)
+	defer f.Close()
 
 	if err != nil {
 		log.Fatal(err)
@@ -40,7 +42,17 @@ func DebugLog(vars ...any) {
 		f.WriteString(fmt.Sprintf("%+v", i))
 	}
 	f.WriteString("\n")
-	defer f.Close()
+}
+
+// Hacky breakpoint that prints a message
+func Breakpoint(vars ...any) {
+	for _, i := range vars {
+		fmt.Printf("%+v ", i)
+	}
+	fmt.Print("\n")
+	fmt.Println("Press return to continue...")
+	reader := bufio.NewReader(os.Stdin)
+	reader.ReadString('\n')
 }
 
 func MergeMaps[K comparable, V any](maps ...map[K]V) map[K]V {

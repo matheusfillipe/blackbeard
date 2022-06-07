@@ -62,7 +62,7 @@ func getShowDetails(show *Show) epdShowDetails {
 	}
 	GetJson(request, &showRes)
 	if len(showRes.Tv_shows) < 1 {
-		println("No episode metadata found for \"" + show.Title + "\"")
+		// println("No episode metadata found for \"" + show.Title + "\"")
 		return showDetails
 	}
 	showId := showRes.Tv_shows[0].Id
