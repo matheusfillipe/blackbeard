@@ -198,7 +198,7 @@ func (video Video) Download(linepos int) bool {
 	name := SanitizeFilename(video.Name)
 	req.Filename = name
 	resp := client.Do(req)
-	fmt.Printf("  %v\n", resp.HTTPResponse.Status)
+	// fmt.Printf("  %v\n", resp.HTTPResponse.Status)
 
 	// start UI loop
 	t := time.NewTicker(500 * time.Millisecond)
