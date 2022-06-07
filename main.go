@@ -366,7 +366,6 @@ func main() {
 
 	flag.Parse()
 
-	createCacheDir(*profileName)
 
 	if *version {
 		fmt.Println("Blackbeard")
@@ -385,6 +384,7 @@ func main() {
 		return
 	}
 
+	createCacheDir(*profileName)
 	if *connectAddr != "" {
 		apiConnect(*connectAddr)
 		return
