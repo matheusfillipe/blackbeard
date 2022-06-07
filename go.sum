@@ -60,8 +60,8 @@ github.com/leodido/go-urn v1.2.1/go.mod h1:zt4jvISO2HfUBqxjfIshjdMTYS56ZS/qv49ic
 github.com/lucasb-eyer/go-colorful v1.0.3/go.mod h1:R4dSotOR9KMtayYi1e77YzuveK+i7ruzyGqttikkLy0=
 github.com/lucasb-eyer/go-colorful v1.2.0 h1:1nnpGOrhyZZuNyfu1QjKiUICQ74+3FNCN69Aj6K7nkY=
 github.com/lucasb-eyer/go-colorful v1.2.0/go.mod h1:R4dSotOR9KMtayYi1e77YzuveK+i7ruzyGqttikkLy0=
-github.com/matheusfillipe/go-fuzzyfinder v0.6.1 h1:e9a4BjjKvq+HODdLwIr0p/5WifxxWKWC2Z3AxSjQZok=
-github.com/matheusfillipe/go-fuzzyfinder v0.6.1/go.mod h1:9B8jhYghp80Aq6JoedyKtExzlk/wQOZQH9WyGeDj818=
+github.com/matheusfillipe/go-fuzzyfinder v0.6.2-0.20220607175830-c5fd2df74a41 h1:xI61vK3Np4AqtfKqUJ/IjNsBmgCUqkwyG4rMTtLr18k=
+github.com/matheusfillipe/go-fuzzyfinder v0.6.2-0.20220607175830-c5fd2df74a41/go.mod h1:9B8jhYghp80Aq6JoedyKtExzlk/wQOZQH9WyGeDj818=
 github.com/mattn/go-colorable v0.1.4/go.mod h1:U0ppj6V5qS13XJ6of8GYAs25YV2eR4EVcfRqFIhoBtE=
 github.com/mattn/go-colorable v0.1.7 h1:bQGKb3vps/j0E9GfJQ03JyhRuxsvdAanXlT9BTw3mdw=
 github.com/mattn/go-colorable v0.1.7/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=

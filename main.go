@@ -12,6 +12,7 @@ import (
 	"os/user"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/c-bata/go-prompt"
 	blb "github.com/matheusfillipe/blackbeard/blb"
@@ -25,6 +26,16 @@ var Version = "development"
 var BuildDate = "development"
 
 const DEFAULT_PORT = 8080
+
+var cliOpts = struct {
+	provider *string
+	show     *int
+	episode  *int
+	all      *bool
+	xnum     *int
+	list     *bool
+	search   *string
+}{}
 
 func completer(d prompt.Document, provider string) []prompt.Suggest {
 	// TODO create show cache
@@ -186,30 +197,52 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 		log.Fatal("No providers")
 	}
 
-	idx, err := fuzzyfinder.Find(
-		providerNames,
-		func(i int) string {
-			return providerNames[i]
-		},
-		fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
-			if i == -1 {
-				return ""
-			}
-			// Give some safety margin
-			w = w / 4
+	// If not provider is specified and -list is passed
+	if !blb.IsDefault(*cliOpts.list) && blb.IsDefault(*cliOpts.provider) {
+		// List providers
+		for _, name := range providerNames {
+			fmt.Println(name)
+		}
+		return
+	}
 
-			provider := providers[providerNames[i]]
-			name := provider.Info().Name
-			if name == "" {
-				name = providerNames[i]
+	var idx int
+	var err error
+	if !blb.IsDefault(*cliOpts.provider) {
+		if !blb.Contains(providerNames, *cliOpts.provider) {
+			fmt.Printf("Provider %s not found, available providers are:\n", *cliOpts.provider)
+			for _, name := range providerNames {
+				fmt.Printf("%s\n", name)
 			}
+			return
+		}
+		idx = blb.IndexOf(providerNames, *cliOpts.provider)
+	} else {
+		idx, err = fuzzyfinder.Find(
+			providerNames,
+			func(i int) string {
+				return providerNames[i]
+			},
+			fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
+				if i == -1 {
+					return ""
+				}
+				// Give some safety margin
+				w = w / 4
 
-			return fmt.Sprintf("%s\n%s\n\n%s",
-				strings.ToUpper(name),
-				blb.WrapString(provider.Info().Description, uint(w)),
-				blb.WrapStringReguardlessly(provider.Info().Url, w),
-			)
-		}))
+				provider := providers[providerNames[i]]
+				name := provider.Info().Name
+				if name == "" {
+					name = providerNames[i]
+				}
+
+				return fmt.Sprintf("%s\n%s\n\n%s",
+					strings.ToUpper(name),
+					blb.WrapString(provider.Info().Description, uint(w)),
+					blb.WrapStringReguardlessly(provider.Info().Url, w),
+				)
+			}))
+	}
 
 	if err != nil {
 		log.Fatal(err)
@@ -218,14 +251,19 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	providerName := providerNames[idx]
 	flow.setProvider(providers[providerName], providerName)
 
-	fmt.Println("Search show/anime/movie (hit tab for history autocomplete, C-D to cancel): ")
-	t := prompt.Input("> ", func(d prompt.Document) []prompt.Suggest { return completer(d, providerName) })
-	restoreTermState()
-	if t == "" {
-		log.Fatal("No search query")
+	var search string
+	if !blb.IsDefault(*cliOpts.search) {
+		search = *cliOpts.search
+	} else {
+		fmt.Println("Search show/anime/movie (hit tab for history autocomplete, C-D to cancel): ")
+		search = prompt.Input("> ", func(d prompt.Document) []prompt.Suggest { return completer(d, providerName) })
+		restoreTermState()
+		if search == "" {
+			log.Fatal("No search query")
+		}
 	}
 
-	shows := flow.searchShows(t)
+	shows := flow.searchShows(search)
 
 	if len(shows) == 0 {
 		if providers[providerName].Info().Cloudflared {
@@ -233,36 +271,64 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 		}
 		log.Fatal("No shows/movies found")
 	}
-	writeSearchCache(providerName, t)
+	// If list is passed display shows, don't cache
+	if !blb.IsDefault(*cliOpts.list) && blb.IsDefault(*cliOpts.show) {
+		for i, show := range shows {
+			fmt.Printf("%d > %s > %s\n", i+1, show.Title, show.Url)
+		}
+		return
+	}
+	writeSearchCache(providerName, search)
 
-	idx, err = fuzzyfinder.Find(
-		shows,
-		func(i int) string {
-			return shows[i].Title
-		},
-		fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
-			if i == -1 {
-				return ""
-			}
-			// Give some safety margin
-			w = w/2 - 12
-			return fmt.Sprintf("Provider: %s\nShow: %s\n\nDescription: %s\n\n\n%s",
-				strings.ToUpper(providerName),
-				blb.WrapString(shows[i].Title, uint(w)),
-				blb.WrapString(shows[i].Metadata.Description, uint(w)),
-				blb.WrapStringReguardlessly(shows[i].Metadata.ThumbnailUrl, w),
-			)
-		}))
+	// Choose show
+	if !blb.IsDefault(*cliOpts.show) && *cliOpts.show > 0 {
+		idx = *cliOpts.show - 1
+	} else {
+		idx, err = fuzzyfinder.Find(
+			shows,
+			func(i int) string {
+				return shows[i].Title
+			},
+			fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
+				if i == -1 {
+					return ""
+				}
+				// Give some safety margin
+				w = w/2 - 12
+				return fmt.Sprintf("Provider: %s\nShow: %s\n\nDescription: %s\n\n\n%s",
+					strings.ToUpper(providerName),
+					blb.WrapString(shows[i].Title, uint(w)),
+					blb.WrapString(shows[i].Metadata.Description, uint(w)),
+					blb.WrapStringReguardlessly(shows[i].Metadata.ThumbnailUrl, w),
+				)
+			}))
+	}
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Check if idx out of range
+	if idx >= len(shows) {
+		fmt.Println("Show index out of range. Found Shows were:")
+		for i, show := range shows {
+			fmt.Printf("%d > %s > %s\n", i+1, show.Title, show.Url)
+		}
+		return
+	}
 	show := shows[idx]
 	episodes := flow.getEpisodes(show)
 
 	if len(episodes) == 0 {
 		log.Fatal("No episodes found")
+	}
+
+	// Passed list but didn't specify episode
+	if !blb.IsDefault(*cliOpts.list) && blb.IsDefault(*cliOpts.episode) {
+		for i, episode := range episodes {
+			fmt.Printf("%d > %s > %s\n", i+1, episode.Title, episode.Url)
+		}
+		return
 	}
 
 	var indexes []int
@@ -271,38 +337,66 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	if show.IsMovie {
 		indexes = []int{0}
 	} else {
-		idxs, err2 := fuzzyfinder.FindMulti(
-			episodes,
-			func(i int) string {
-				return fmt.Sprintf("%v > %v", episodes[i].Number+1, episodes[i].Title)
-			},
-			fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
-				if i == -1 {
-					return ""
-				}
-				// Give some safety margin
-				w = w/2 - 12
-				return fmt.Sprintf("Provider: %s\nShow: %s\nEpisode n. %d\n\nDescription: %s",
-					strings.ToUpper(providerName),
-					blb.WrapString(show.Title, uint(w)),
-					episodes[i].Number+1,
-					blb.WrapString(episodes[i].Metadata.Description, uint(w)),
-				)
-			}))
+		// Show has episodes
+		if !blb.IsDefault(*cliOpts.episode) {
+			indexes = []int{*cliOpts.episode}
+		} else if !blb.IsDefault(*cliOpts.all) {
+			indexes = []int{}
+			for i := 0; i < len(episodes); i++ {
+				indexes = append(indexes, i)
+			}
+		} else {
+			idxs, err2 := fuzzyfinder.FindMulti(
+				episodes,
+				func(i int) string {
+					return fmt.Sprintf("%v > %v", episodes[i].Number+1, episodes[i].Title)
+				},
+				fuzzyfinder.WithPreviewWindow(func(i, w, h int) string {
+					if i == -1 {
+						return ""
+					}
+					// Give some safety margin
+					w = w/2 - 12
+					return fmt.Sprintf("Provider: %s\nShow: %s\nEpisode n. %d\n\nDescription: %s",
+						strings.ToUpper(providerName),
+						blb.WrapString(show.Title, uint(w)),
+						episodes[i].Number+1,
+						blb.WrapString(episodes[i].Metadata.Description, uint(w)),
+					)
+				}))
 
-		if err2 != nil {
-			log.Fatal(err)
+			if err2 != nil {
+				log.Fatal(err)
+			}
+			indexes = idxs
 		}
-		indexes = idxs
 	}
 
-	// TODO multitask, parallel downloads?
-	for _, idx := range indexes {
-		idx := idx
-		episode := episodes[idx]
-		video := flow.getVideo(episode)
-		video.Download()
+	// Download all episodes in parallel
+	maxConcurrency := 1
+	if !blb.IsDefault(*cliOpts.xnum) {
+		maxConcurrency = *cliOpts.xnum
 	}
+	var throttle = make(chan int, maxConcurrency)
+	var wg sync.WaitGroup
+
+  // clear screen
+  fmt.Print("\033[H\033[2J")
+
+  i := 0
+	for _, idx := range indexes {
+		throttle <- 1
+		wg.Add(1)
+		go func(idx int, wg *sync.WaitGroup, throttle chan int, linepos int) {
+			defer wg.Done()
+      defer func() { <-throttle; i-- }()
+      i++
+			episode := episodes[idx]
+			video := flow.getVideo(episode)
+			video.Download(idx)
+		}(idx, &wg, throttle, i)
+	}
+	wg.Wait()
 }
 
 func apiConnect(url string) {
@@ -354,18 +448,24 @@ func main() {
 	const default_host = "0.0.0.0:8080"
 
 	// API opts
-	apiMode := flag.Bool("api", false, "Start a blackbeard api")
+	apiMode := flag.Bool("api", false, "Start a blackbeard api.")
 	apiPort := flag.Int("port", defaultPort, "Port to bind to if api. Will also read 'PORT' from env.")
 	apiHost := flag.String("host", "0.0.0.0", "Host to bind to if api.")
 
 	// Client opts
 	connectAddr := flag.String("connect", "", "Start a client that connects to a blackbeard api with the given address.")
 	profileName := flag.String("profile", username, "Use a different profile folder.")
+	cliOpts.provider = flag.String("provider", "", "Use a provider.")
+	cliOpts.show = flag.Int("show", 0, "Choose a show/movie directly by Number.")
+	cliOpts.episode = flag.Int("ep", 0, "Choose an episode number to download. Both -show and -ep start from 1.")
+	cliOpts.list = flag.Bool("list", false, "List line separated and stop execution. Can be used alone to list providers, with search to list show results or with show to list episodes. This is the only option that will prevent from downloading anything and just output data.")
+	cliOpts.search = flag.String("search", "", "Searches for show/movie.")
+	cliOpts.all = flag.Bool("D", false, "Download all episodes.")
+	cliOpts.xnum = flag.Int("x", 0, "Number of parallel download workers")
 
 	version := flag.Bool("version", false, "Prints the version then exits")
 
 	flag.Parse()
-
 
 	if *version {
 		fmt.Println("Blackbeard")

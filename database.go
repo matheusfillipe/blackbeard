@@ -29,7 +29,10 @@ type CacheValue struct {
 
 func createDb() *sql.DB{
 	createCacheDir(cacheDb.profile)
-	sqliteDatabase, _ := sql.Open("sqlite3", cacheDb.filename)
+	sqliteDatabase, err := sql.Open("sqlite3", cacheDb.filename)
+  if err != nil {
+    log.Fatal(err)
+  }
 	return sqliteDatabase
 }
 

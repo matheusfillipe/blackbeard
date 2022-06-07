@@ -178,7 +178,8 @@ func GetJson[T any](request Request, data T) T {
 }
 
 // Downloads a video to the current folder
-func (video Video) Download() bool {
+// linepos is the position to print the download progress line in
+func (video Video) Download(linepos int) bool {
 	// create client
 	client := grab.NewClient()
 	req, _ := grab.NewRequest(".", video.Request.Url)
@@ -200,8 +201,6 @@ func (video Video) Download() bool {
 	t := time.NewTicker(500 * time.Millisecond)
 	defer t.Stop()
 
-
-	fmt.Println("")
 Loop:
 	for {
 		select {
@@ -216,8 +215,9 @@ Loop:
 				unit = "MB/s"
 			}
 
-			fmt.Print("\033[1A\033[K")
-			fmt.Printf("Downloading to %s: %.2f%s - %.2fMB/%.2fMB (%.2f%%)\n",
+			fmt.Printf("\033[H\033[%dB\033[K", linepos+1)
+			fmt.Printf("%d > Downloading to %s: %.2f%s - %.2fMB/%.2fMB (%.2f%%)\n",
+				linepos+1,
 				resp.Filename,
 				speed,
 				unit,
@@ -398,4 +398,40 @@ func Map[T Number, O Number](vars []T, f func(v T) O) []O {
 		result = append(result, f(value))
 	}
 	return result
+}
+
+// Check if a value is the default
+func IsDefault[T Number | string | bool](v T) bool {
+	switch r := any(v).(type) {
+	case int, int8, int16, int32, int64:
+		return r == 0
+	case float64, float32:
+		return r == 0.0
+	case bool:
+		return r == false
+	case string:
+		return r == ""
+	default:
+		return false
+	}
+}
+
+// Check if an array contains value
+func Contains[T comparable](array []T, value T) bool {
+	for _, i := range array {
+		if i == value {
+			return true
+		}
+	}
+	return false
+}
+
+// Find index in array
+func IndexOf[T comparable](array []T, value T) int {
+	for i, v := range array {
+		if v == value {
+			return i
+		}
+	}
+	return -1
 }
