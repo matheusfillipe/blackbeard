@@ -380,17 +380,18 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	var throttle = make(chan int, maxConcurrency)
 	var wg sync.WaitGroup
 
-  // clear screen
-  fmt.Print("\033[H\033[2J")
+	// clear screen
+	fmt.Print("\033[H\033[2J")
 
-  i := 0
+	i := 0
 	for _, idx := range indexes {
+		fmt.Println("")
 		throttle <- 1
 		wg.Add(1)
 		go func(idx int, wg *sync.WaitGroup, throttle chan int, linepos int) {
 			defer wg.Done()
-      defer func() { <-throttle; i-- }()
-      i++
+			defer func() { <-throttle; i-- }()
+			i++
 			episode := episodes[idx]
 			video := flow.getVideo(episode)
 			video.Download(idx)
