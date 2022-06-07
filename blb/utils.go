@@ -182,7 +182,10 @@ func GetJson[T any](request Request, data T) T {
 func (video Video) Download(linepos int) bool {
 	// create client
 	client := grab.NewClient()
-	req, _ := grab.NewRequest(".", video.Request.Url)
+	req, err := grab.NewRequest(".", video.Request.Url)
+  if err != nil {
+    return false
+  }
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	req = req.WithContext(ctx)
@@ -434,4 +437,13 @@ func IndexOf[T comparable](array []T, value T) int {
 		}
 	}
 	return -1
+}
+
+// Repeat String
+func Repeat(s string, times int) string {
+	res := ""
+	for i := 0; i < times; i++ {
+		res += s
+	}
+	return res
 }

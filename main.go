@@ -394,7 +394,10 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 			i++
 			episode := episodes[idx]
 			video := flow.getVideo(episode)
-			video.Download(idx)
+			if !video.Download(idx) {
+				fmt.Printf("Failed to download %s", video.Name)
+				fmt.Printf(blb.Repeat("\n", maxConcurrency + 1))
+			}
 		}(idx, &wg, throttle, i)
 	}
 	wg.Wait()
