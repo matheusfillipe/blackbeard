@@ -390,7 +390,7 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 		wg.Add(1)
 		go func(idx int, wg *sync.WaitGroup, throttle chan int, linepos int) {
 			defer wg.Done()
-			defer func() { <-throttle; i-- }()
+			defer func() { <-throttle; i--; fmt.Println("") }()
 			i++
 			episode := episodes[idx]
 			video := flow.getVideo(episode)
