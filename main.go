@@ -17,6 +17,7 @@ import (
 	blb "github.com/matheusfillipe/blackbeard/blb"
 	"github.com/matheusfillipe/blackbeard/providers"
 	"github.com/matheusfillipe/go-fuzzyfinder"
+	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/term"
 )
 
@@ -25,30 +26,15 @@ var BuildDate = "development"
 
 const DEFAULT_PORT = 8080
 
-func createCache(profile string) {
-	usr, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
+func completer(d prompt.Document, provider string) []prompt.Suggest {
+	// TODO create show cache
+	previousSearches, ok := getSearchCache(provider)
+	if !ok {
+		return []prompt.Suggest{}
 	}
-	cacheDir := usr.HomeDir + "/.cache/blackbeard/" + profile + "/"
-	os.MkdirAll(cacheDir, 0755)
-	cacheFile := cacheDir + "/cache.db"
-
-	// Create db file if doesn't exist
-	_, err = os.Stat(cacheFile)
-	if os.IsNotExist(err) {
-		file, err := os.Create(cacheDir + "history.db")
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-		file.Close()
-	}
-}
-
-func completer(d prompt.Document) []prompt.Suggest {
-	// TODO read from cache
-	s := []prompt.Suggest{
-		{Text: "attack on titan", Description: "Very nice one"},
+	s := []prompt.Suggest{}
+	for _, search := range previousSearches {
+		s = append(s, prompt.Suggest{Text: search.Query, Description: search.Description})
 	}
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 }
@@ -188,12 +174,17 @@ func restoreTermState() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// Choose provider --> Search --> Choose show --> choose episode if any
 func downloadTuiFlow(flow TuiFlowTemplate) {
 	saveTermState()
 	defer restoreTermState()
 
 	providers := flow.getProviders()
 	providerNames := blb.Keys(providers)
+
+	if len(providers) == 0 {
+		log.Fatal("No providers")
+	}
 
 	idx, err := fuzzyfinder.Find(
 		providerNames,
@@ -227,14 +218,22 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	providerName := providerNames[idx]
 	flow.setProvider(providers[providerName], providerName)
 
-	fmt.Println("Search show/anime/movie (hit tab for history autocomplete): ")
-	t := prompt.Input("> ", completer)
+	fmt.Println("Search show/anime/movie (hit tab for history autocomplete, C-D to cancel): ")
+	t := prompt.Input("> ", func(d prompt.Document) []prompt.Suggest { return completer(d, providerName) })
+	restoreTermState()
 	if t == "" {
 		log.Fatal("No search query")
 	}
-	restoreTermState()
 
 	shows := flow.searchShows(t)
+
+	if len(shows) == 0 {
+		if providers[providerName].Info().Cloudflared {
+			fmt.Println("You might want to install curl impersonate or use the api: https://github.com/matheusfillipe/blackbeard#usage")
+		}
+		log.Fatal("No shows/movies found")
+	}
+	writeSearchCache(providerName, t)
 
 	idx, err = fuzzyfinder.Find(
 		shows,
@@ -261,6 +260,11 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 
 	show := shows[idx]
 	episodes := flow.getEpisodes(show)
+
+	if len(episodes) == 0 {
+		log.Fatal("No episodes found")
+	}
+
 	var indexes []int
 
 	// if show is movie we can skip the episode list
@@ -362,7 +366,7 @@ func main() {
 
 	flag.Parse()
 
-	createCache(*profileName)
+	createCacheDir(*profileName)
 
 	if *version {
 		fmt.Println("Blackbeard")

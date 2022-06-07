@@ -32,6 +32,7 @@ func (a Wcofun) Info() blackbeard.ProviderInfo {
 		Name: "9anime",
 		Url: "https://www.wcofun.com/",
 		Description: "Watch Cartoons and Anime Online in HD for Free",
+		Cloudflared: true,
 	}
 }
 
