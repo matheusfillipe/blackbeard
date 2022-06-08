@@ -36,7 +36,14 @@ jobs:
       - run:
           name: Run tests
           command: |
+            sudo apt install wget
+            wget https://github.com/lwthiker/curl-impersonate/releases/download/v0.5.0/libcurl-impersonate-v0.5.0.x86_64-linux-gnu.tar.gz
+            tar -xzvf libcurl-impersonate-v0.5.0.x86_64-linux-gnu.tar.gz
+            export LD_PRELOAD=$(pwd)/libcurl-impersonate-chrome.so.4.7.0
             cd blb
+            go test -v
+            cd ..
+            cd tests
             go test -v
 
   gh-release:
