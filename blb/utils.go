@@ -234,19 +234,19 @@ Loop:
 		}
 	}
 
-	fmt.Print("\033[1A\033[K")
-	fmt.Printf("Finished %s: %.2fMB/%.2fMB (100%%)\n",
-		resp.Filename,
-		float64(resp.BytesComplete())/1024/1024,
-		float64(resp.Size())/1024/1024)
+	fmt.Printf("%d > \033[H\033[%dB\033[K", linepos+1, linepos+1)
 
 	// check for errors
 	if err := resp.Err(); err != nil {
 		fmt.Printf("Download failed: %v\n", err.Error())
 		return false
 	}
+	fmt.Printf("%d > Finished %s: %.2fMB/%.2fMB (100%%)\n",
+		linepos+1,
+		resp.Filename,
+		float64(resp.BytesComplete())/1024/1024,
+		float64(resp.Size())/1024/1024)
 
-	fmt.Printf("Download saved to ./%v \n", resp.Filename)
 	return true
 }
 
