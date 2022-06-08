@@ -121,6 +121,13 @@ func ScrapePage(request Request, selector string, handler func(int, *goquery.Sel
 			println("Could not load page ", request.Url)
 			return
 		}
+
+		// // When in pain
+		// println("------------------------------------------------------")
+		// println(_body)
+		// println("------------------------------------------------------")
+		// fmt.Printf("%+v\n", request)
+
 		// Convert to io.Reader
 		body = strings.NewReader(_body)
 	} else {

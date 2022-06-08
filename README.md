@@ -88,7 +88,10 @@ The app is purely for educational and personal use. It merely scrapes 3rd-party 
 
 - [x] Cli arg parsing
 - [x] http api
-- [ ] Profiles that store watch history
+- [x] Profiles that store watch history
 - [x] wcofun provider
-- [ ] 9anime provider
+- [ ] m3u8 downloader https://github.com/canhlinh/hlsdl
+- [ ] headless browser
+    - [ ] 9anime provider
+    - [ ] soap2day provider
 - [ ] More providers

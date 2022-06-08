@@ -13,7 +13,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-var soapUserAgent = map[string]string{"User-Agent": "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0"}
+var soapUserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0"}
 
 const soapRootUrl = "https://ww1.ssoap2day.to"
 
@@ -43,7 +43,9 @@ func (a Soap2day) SearchShows(query string) []blackbeard.Show {
 	request := blackbeard.Request{
 		Url:     url,
 		Method:  "POST",
-		Headers: soapUserAgent,
+		Headers: blackbeard.MergeMaps(soapUserAgent, map[string]string{
+			"Content-Type": "application/x-www-form-urlencoded",
+		}),
 		Curl:    true,
 		Body: map[string]string{
 			"do":           "search",
@@ -51,7 +53,7 @@ func (a Soap2day) SearchShows(query string) []blackbeard.Show {
 			"search_start": "0",
 			"full_search":  "0",
 			"result_from":  "1",
-			"story":        "sonic",
+			"story":        query,
 		},
 	}
 
