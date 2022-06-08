@@ -340,7 +340,7 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	} else {
 		// Show has episodes
 		if !blb.IsDefault(*cliOpts.episode) {
-			indexes = []int{*cliOpts.episode}
+			indexes = []int{*cliOpts.episode - 1}
 		} else if !blb.IsDefault(*cliOpts.all) {
 			indexes = []int{}
 			for i := 0; i < len(episodes); i++ {
@@ -373,7 +373,7 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 		}
 	}
 
-	sort.Slice(indexes, func(i, j int) bool {return i < j})
+	sort.Slice(indexes, func(i, j int) bool { return indexes[i] < indexes[j] })
 
 	// Download all episodes in parallel
 	maxConcurrency := 1
@@ -399,12 +399,12 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 			video := flow.getVideo(episode)
 			if !video.Download(idx) {
 				fmt.Printf("Failed to download %s", video.Name)
-				fmt.Printf(blb.Repeat("\n", maxConcurrency + 1))
+				fmt.Printf(blb.Repeat("\n", maxConcurrency+1))
 			}
 		}(idx, &wg, throttle, i)
 	}
-	fmt.Println("\n\nAll Done!!!")
 	wg.Wait()
+	fmt.Println("\n\n                        All Done!!!")
 }
 
 func apiConnect(url string) {
