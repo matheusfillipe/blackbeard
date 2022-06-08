@@ -495,7 +495,7 @@ func main() {
 	cliOpts.search = flag.String("search", "", "Searches for show/movie.")
 	cliOpts.all = flag.Bool("D", false, "Download all episodes.")
 	cliOpts.xnum = flag.Int("x", 0, "Number of parallel download workers")
-	cliOpts.downloadPath = flag.String("path", "", "Download path")
+	cliOpts.downloadPath = flag.String("path", "", "Directory to save to")
 
 	version := flag.Bool("version", false, "Prints the version then exits")
 
