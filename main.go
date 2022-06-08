@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/user"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -371,6 +372,8 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 			indexes = idxs
 		}
 	}
+
+	sort.Slice(indexes, func(i, j int) bool {return i < j})
 
 	// Download all episodes in parallel
 	maxConcurrency := 1
