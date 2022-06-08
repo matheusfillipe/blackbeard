@@ -391,7 +391,7 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	fmt.Print(blb.Repeat("\n", len(indexes) + 1))
 
 	// Go back up
-	fmt.Print(blb.Repeat("\n", len(indexes) + 1))
+	fmt.Print(blb.Repeat("\033[1A", len(indexes) + 1))
 
 	for _, idx := range indexes {
 		fmt.Println("")
