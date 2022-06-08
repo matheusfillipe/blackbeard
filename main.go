@@ -400,6 +400,7 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 			}
 		}(idx, &wg, throttle, i)
 	}
+	fmt.Println("\n\nAll Done!!!")
 	wg.Wait()
 }
 
