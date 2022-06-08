@@ -183,9 +183,9 @@ func (video Video) Download(linepos int) bool {
 	// create client
 	client := grab.NewClient()
 	req, err := grab.NewRequest(".", video.Request.Url)
-  if err != nil {
-    return false
-  }
+	if err != nil {
+		return false
+	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	req = req.WithContext(ctx)
@@ -446,4 +446,26 @@ func Repeat(s string, times int) string {
 		res += s
 	}
 	return res
+}
+
+// Run a function and return nil, false if it timeouts. otherwise returns f(), true
+// timeout in seconds
+func Timeout[R any](timeout int, f func() R) (R, bool) {
+	c := make(chan int)
+	resc := make(chan R)
+	go func() {
+		time.Sleep(time.Duration(timeout) * time.Second)
+		c <- 1
+	}()
+	go func() {
+		resc <- f()
+	}()
+
+	select {
+	case res := <-resc:
+		return res, true
+	case <-c:
+		var res R
+		return res, false
+	}
 }

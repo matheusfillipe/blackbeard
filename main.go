@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"os/user"
@@ -386,22 +387,26 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	// clear screen
 	fmt.Print("\033[H\033[2J")
 
-	i := 0
+	// Create space for download lines
+	fmt.Print(blb.Repeat("\n", len(indexes) + 1))
+
+	// Go back up
+	fmt.Print(blb.Repeat("\n", len(indexes) + 1))
+
 	for _, idx := range indexes {
 		fmt.Println("")
 		throttle <- 1
 		wg.Add(1)
-		go func(idx int, wg *sync.WaitGroup, throttle chan int, linepos int) {
+		go func(idx int, wg *sync.WaitGroup, throttle chan int) {
 			defer wg.Done()
-			defer func() { <-throttle; i--; fmt.Println("") }()
-			i++
+			defer func() { <-throttle; fmt.Println("") }()
 			episode := episodes[idx]
 			video := flow.getVideo(episode)
 			if !video.Download(idx) {
 				fmt.Printf("Failed to download %s", video.Name)
 				fmt.Printf(blb.Repeat("\n", maxConcurrency+1))
 			}
-		}(idx, &wg, throttle, i)
+		}(idx, &wg, throttle)
 	}
 	wg.Wait()
 	fmt.Println("\n\n                        All Done!!!")
@@ -419,10 +424,16 @@ func apiConnect(url string) {
 	fmt.Printf("Attempting connection to blackbeard api at %q\n", url)
 
 	// Check if there is a valid reply
-	request := blb.Request{Url: url + "version"}
-	res, ok := blb.Perform(request)
+	res, ok := blb.Timeout(10, func() *http.Response {
+		request := blb.Request{Url: url + "version"}
+		res, ok := blb.Perform(request)
+		if !ok {
+			log.Fatal("Connection failed")
+		}
+		return res
+	})
 	if !ok {
-		log.Fatal("Connection failed")
+		log.Fatal("Connection timed out")
 	}
 
 	body := res.Body
