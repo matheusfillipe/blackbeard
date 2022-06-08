@@ -30,13 +30,14 @@ var BuildDate = "development"
 const DEFAULT_PORT = 8080
 
 var cliOpts = struct {
-	provider *string
-	show     *int
-	episode  *int
-	all      *bool
-	xnum     *int
-	list     *bool
-	search   *string
+	provider     *string
+	show         *int
+	episode      *int
+	all          *bool
+	xnum         *int
+	list         *bool
+	search       *string
+	downloadPath *string
 }{}
 
 func completer(d prompt.Document, provider string) []prompt.Suggest {
@@ -376,6 +377,19 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 
 	sort.Slice(indexes, func(i, j int) bool { return indexes[i] < indexes[j] })
 
+	// Create dir if multiple
+	dir := "./"
+	if len(indexes) > 1 && blb.IsDefault(*cliOpts.downloadPath) {
+		err = os.MkdirAll(blb.SanitizeFilename(show.Title), 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
+		dir = blb.SanitizeFilename(show.Title)
+	}
+	if !blb.IsDefault(*cliOpts.downloadPath) {
+		dir = blb.SanitizeFilename(*cliOpts.downloadPath)
+	}
+
 	// Download all episodes in parallel
 	maxConcurrency := 1
 	if !blb.IsDefault(*cliOpts.xnum) {
@@ -388,10 +402,10 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	fmt.Print("\033[H\033[2J")
 
 	// Create space for download lines
-	fmt.Print(blb.Repeat("\n", len(indexes) + 1))
+	fmt.Print(blb.Repeat("\n", len(indexes)+1))
 
 	// Go back up
-	fmt.Print(blb.Repeat("\033[1A", len(indexes) + 1))
+	fmt.Print(blb.Repeat("\033[1A", len(indexes)+1))
 
 	for _, idx := range indexes {
 		fmt.Println("")
@@ -402,7 +416,7 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 			defer func() { <-throttle; fmt.Println("") }()
 			episode := episodes[idx]
 			video := flow.getVideo(episode)
-			if !video.Download(idx) {
+			if !video.Download(dir, idx) {
 				fmt.Printf("Failed to download %s", video.Name)
 				fmt.Printf(blb.Repeat("\n", maxConcurrency+1))
 			}
@@ -481,6 +495,7 @@ func main() {
 	cliOpts.search = flag.String("search", "", "Searches for show/movie.")
 	cliOpts.all = flag.Bool("D", false, "Download all episodes.")
 	cliOpts.xnum = flag.Int("x", 0, "Number of parallel download workers")
+	cliOpts.downloadPath = flag.String("path", "", "Download path")
 
 	version := flag.Bool("version", false, "Prints the version then exits")
 
