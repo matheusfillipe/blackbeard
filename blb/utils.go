@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 	"unicode"
@@ -177,9 +178,9 @@ func GetJson[T any](request Request, data T) T {
 	return data
 }
 
-// Downloads a video to the current folder
+// Downloads a video to the given directory
 // linepos is the position to print the download progress line in
-func (video Video) Download(linepos int) bool {
+func (video Video) Download(dir string, linepos int) bool {
 	// create client
 	client := grab.NewClient()
 	req, err := grab.NewRequest(".", video.Request.Url)
@@ -196,7 +197,8 @@ func (video Video) Download(linepos int) bool {
 
 	// start download
 	name := SanitizeFilename(video.Name)
-	req.Filename = name
+	name = dir + "/" + name
+	req.Filename = filepath.FromSlash(name)
 	resp := client.Do(req)
 	// fmt.Printf("  %v\n", resp.HTTPResponse.Status)
 

@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/user"
+	"path/filepath"
 
 	blb "github.com/matheusfillipe/blackbeard/blb"
 )
@@ -101,9 +102,9 @@ func createCacheDir(profile string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cacheDir := usr.HomeDir + "/.cache/blackbeard/" + profile + "/"
+	cacheDir := filepath.FromSlash(usr.HomeDir + "/.cache/blackbeard/" + profile + "/")
 	os.MkdirAll(cacheDir, 0755)
-	cacheFile := cacheDir + "/cache.db"
+	cacheFile := filepath.FromSlash(cacheDir + "/cache.db")
 
 	// Create db file if doesn't exist, check access
 	_, err = os.Stat(cacheFile)

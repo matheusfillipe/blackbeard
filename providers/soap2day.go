@@ -13,9 +13,9 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-var soapUserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"}
+var soapUserAgent = map[string]string{"User-Agent": "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0"}
 
-const soapRootUrl = "https://vvwv.ssoap2day.to"
+const soapRootUrl = "https://ww1.ssoap2day.to"
 
 type Soap2day struct{}
 
@@ -29,7 +29,7 @@ type CdnResponse struct {
 func (a Soap2day) Info() blackbeard.ProviderInfo {
 	return blackbeard.ProviderInfo{
 		Name:        "soap2day",
-		Url:         "https://vvwv.ssoap2day.to/",
+		Url:         "https://ssoap2day.to/",
 		Description: "Soap2day is a website with a vast number of movies to watch on soap2day. This online platform is specifically designed to meet all your movie cravings at Soap2day.",
 	}
 }
@@ -51,9 +51,10 @@ func (a Soap2day) SearchShows(query string) []blackbeard.Show {
 			"search_start": "0",
 			"full_search":  "0",
 			"result_from":  "1",
-			"story":        query,
+			"story":        "sonic",
 		},
 	}
+
 
 	blackbeard.ScrapePage(request, "div.thumbnail.text-center", func(i int, s *goquery.Selection) {
 		href := s.Find("div:nth-child(2) > a").AttrOr("href", "")
