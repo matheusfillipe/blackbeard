@@ -29,7 +29,7 @@ type CdnResponse struct {
 func (a Soap2day) Info() blackbeard.ProviderInfo {
 	return blackbeard.ProviderInfo{
 		Name:        "soap2day",
-		Url:         "https://ssoap2day.to/",
+		Url:         soapRootUrl,
 		Description: "Soap2day is a website with a vast number of movies to watch on soap2day. This online platform is specifically designed to meet all your movie cravings at Soap2day.",
 	}
 }
@@ -96,6 +96,9 @@ func (a Soap2day) GetEpisodes(show *blackbeard.Show) []blackbeard.Episode {
 	blackbeard.ScrapePage(request, ".player-iframelist > li", func(i int, s *goquery.Selection) {
 		title := strconv.Itoa(i + 1)
 		href := s.AttrOr("data-playerlink", "")
+		if !strings.HasPrefix(href, "http"){
+			href = soapRootUrl + href
+		}
 		show.Episodes = append(show.Episodes, blackbeard.Episode{Title: title, Url: href, Number: i})
 	})
 
