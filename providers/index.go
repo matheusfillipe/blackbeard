@@ -11,5 +11,6 @@ func GetProviders() map[string]blackbeard.VideoProvider {
 		"9anime": NineAnime{},
 		"wcofun": Wcofun{},
 		"soap2day": Soap2day{},
+		"1337x": Leetx{},
 	}
 }

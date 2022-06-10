@@ -122,12 +122,6 @@ func ScrapePage(request Request, selector string, handler func(int, *goquery.Sel
 			return
 		}
 
-		// // When in pain
-		// println("------------------------------------------------------")
-		// println(_body)
-		// println("------------------------------------------------------")
-		// fmt.Printf("%+v\n", request)
-
 		// Convert to io.Reader
 		body = strings.NewReader(_body)
 	} else {
@@ -139,7 +133,20 @@ func ScrapePage(request Request, selector string, handler func(int, *goquery.Sel
 			return
 		}
 		body = res.Body
+
 	}
+
+	if request.Debug {
+		buff := new(bytes.Buffer)
+		buff.ReadFrom(body)
+		bstring := buff.String()
+		println("------------------------------------------------------")
+		println(bstring)
+		println("------------------------------------------------------")
+		fmt.Printf("%+v\n", request)
+		body = strings.NewReader(bstring)
+	}
+
 
 	doc, err := goquery.NewDocumentFromReader(body)
 	if err != nil {

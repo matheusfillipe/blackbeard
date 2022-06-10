@@ -416,9 +416,15 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 			defer func() { <-throttle; fmt.Println("") }()
 			episode := episodes[idx]
 			video := flow.getVideo(episode)
-			if !video.Download(dir, idx) {
-				fmt.Printf("Failed to download %s", video.Name)
-				fmt.Printf(blb.Repeat("\n", maxConcurrency+1))
+			switch video.Format {
+			case "mp4":
+				if !video.Download(dir, idx) {
+					fmt.Printf("Failed to download %s", video.Name)
+					fmt.Printf(blb.Repeat("\n", maxConcurrency+1))
+				}
+				break
+			default:
+				fmt.Printf("Download not implemenetd for format: %s\nURL: %s", video.Format, video.Request.Url)
 			}
 		}(idx, &wg, throttle)
 	}
