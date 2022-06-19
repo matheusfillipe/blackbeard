@@ -1,4 +1,4 @@
-// 1337x.wtf provider
+// 1337x.to provider
 
 package providers
 
