@@ -107,6 +107,7 @@ jobs:
             mkdir -p i686-musl/
             version=$(git describe --tags --abbrev=0)
             GOOS=linux GOARCH=386 CGO_ENABLED=1 go build -ldflags="-s -w -X 'main.Version=$version' -X 'main.BuildDate=$(date -u)'" -o "i686-musl/blackbeard"
+
       - run:
           name: Github release
           command: |
