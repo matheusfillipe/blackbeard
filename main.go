@@ -38,6 +38,7 @@ var cliOpts = struct {
 	list         *bool
 	search       *string
 	downloadPath *string
+	num          *bool
 }{}
 
 func completer(d prompt.Document, provider string) []prompt.Suggest {
@@ -398,6 +399,13 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	var throttle = make(chan int, maxConcurrency)
 	var wg sync.WaitGroup
 
+	// Formatting options
+	var n_episodes = strconv.Itoa(len(strconv.Itoa(len(episodes))))
+	var formatstr = "%0" + n_episodes + "d-"
+	if !blb.IsDefault(*cliOpts.num) {
+		formatstr = ""
+	}
+
 	// clear screen
 	fmt.Print("\033[H\033[2J")
 
@@ -418,7 +426,7 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 			video := flow.getVideo(episode)
 			switch video.Format {
 			case "mp4":
-				if !video.Download(dir, idx) {
+				if !video.Download(dir, idx, formatstr) {
 					fmt.Printf("Failed to download %s", video.Name)
 					fmt.Printf(blb.Repeat("\n", maxConcurrency+1))
 				}
@@ -462,7 +470,7 @@ func apiConnect(url string) {
 	buf.ReadFrom(body)
 
 	if strings.Contains(buf.String(), "version") {
-		println("Connection successful")
+		fmt.Println("Connection successful")
 	} else {
 		log.Fatal("Connection failed")
 	}
@@ -502,6 +510,7 @@ func main() {
 	cliOpts.all = flag.Bool("D", false, "Download all episodes.")
 	cliOpts.xnum = flag.Int("x", 0, "Number of parallel download workers")
 	cliOpts.downloadPath = flag.String("path", "", "Directory to save to")
+	cliOpts.num = flag.Bool("n", false, "Supresss prepending the episode number to the filename")
 
 	version := flag.Bool("version", false, "Prints the version then exits")
 

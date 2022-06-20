@@ -1,4 +1,4 @@
-// TODO http api
+// http api
 
 package main
 

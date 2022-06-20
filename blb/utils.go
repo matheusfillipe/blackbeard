@@ -194,7 +194,7 @@ func GetJson[T any](request Request, data T) T {
 
 // Downloads a video to the given directory
 // linepos is the position to print the download progress line in
-func (video Video) Download(dir string, linepos int) bool {
+func (video Video) Download(dir string, linepos int, prepend_str_fmt string) bool {
 	// create client
 	client := grab.NewClient()
 	req, err := grab.NewRequest(".", video.Request.Url)
@@ -211,7 +211,12 @@ func (video Video) Download(dir string, linepos int) bool {
 
 	// start download
 	name := SanitizeFilename(video.Name)
-	name = dir + "/" + name
+	if len(prepend_str_fmt) > 1 {
+		name = dir + "/" + fmt.Sprintf(prepend_str_fmt, linepos + 1) + name
+	} else {
+		name = dir + "/" + name
+	}
+	name = strings.ReplaceAll(name, "//", "/")
 	req.Filename = filepath.FromSlash(name)
 	resp := client.Do(req)
 	// fmt.Printf("  %v\n", resp.HTTPResponse.Status)
