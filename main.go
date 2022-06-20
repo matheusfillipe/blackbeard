@@ -519,7 +519,7 @@ func main() {
 	if *version {
 		fmt.Println("Blackbeard")
 		fmt.Println("Version: ", Version)
-		fmt.Println("Date: ", BuildDate)
+		fmt.Println("Build Date: ", BuildDate)
 		return
 	}
 
