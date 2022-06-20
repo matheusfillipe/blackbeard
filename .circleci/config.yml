@@ -112,6 +112,6 @@ jobs:
           name: Github release
           command: |
             apk add zip
-            zip i686-musl.zip i686-musl/blackbeard
+            zip linux_i686-musl.zip i686-musl/blackbeard
             VERSION=$(git describe --tags --abbrev=0)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -replace ${VERSION} i686-musl.zip
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -replace ${VERSION} linux_i686-musl.zip
