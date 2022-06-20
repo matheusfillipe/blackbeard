@@ -1,4 +1,4 @@
-// 1337x.wtf provider
+// 1337x.to provider
 
 package providers
 
@@ -10,13 +10,13 @@ import (
 
 type Leetx struct{}
 
-const leetUrl = "https://1337x.wtf"
+const leetUrl = "https://1337x.to"
 
 
 func (a Leetx) Info() blackbeard.ProviderInfo {
 	return blackbeard.ProviderInfo{
 		Name: "1337x",
-		Url: "https://1337x.wtf/",
+		Url: "https://1337x.to/",
 		Description: "Search and find torrents for movies, tv shows and animes",
 	}
 }
