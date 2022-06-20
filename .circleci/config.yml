@@ -19,6 +19,7 @@ workflows:
       - gh-release-ish:
           requires:
             - build-and-test
+            - gh-release
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*$/
@@ -109,6 +110,7 @@ jobs:
       - run:
           name: Github release
           command: |
+            apk add zip
             zip i686-musl.zip i686-musl/blackbeard
             VERSION=$(git describe --tags --abbrev=0)
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -replace ${VERSION} i686-musl.zip
