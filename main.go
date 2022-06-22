@@ -376,6 +376,11 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 		}
 	}
 
+	if len(indexes) == 0 {
+		fmt.Println("No episodes selected.")
+		return
+	}
+
 	sort.Slice(indexes, func(i, j int) bool { return indexes[i] < indexes[j] })
 
 	// Create dir if multiple
@@ -408,6 +413,10 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 
 	// clear screen
 	fmt.Print("\033[H\033[2J")
+
+	if len(indexes) > 1 {
+		fmt.Printf("Downloading selected episodes from '%d' to '%d'", indexes[0]+1, indexes[len(indexes)-1]+1)
+	}
 
 	// Create space for download lines
 	fmt.Print(blb.Repeat("\n", len(indexes)+1))
@@ -481,6 +490,8 @@ func apiConnect(url string) {
 }
 
 func main() {
+	// blb.Headless()
+	// return
 	defaultPort, err := strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
 		defaultPort = DEFAULT_PORT
