@@ -528,8 +528,8 @@ func apiConnect(url string) {
 }
 
 func main() {
-	// blb.Headless()
-	// return
+	blb.Headless()
+	return
 	defaultPort, err := strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
 		defaultPort = DEFAULT_PORT
