@@ -32,7 +32,7 @@ const DEFAULT_PORT = 8080
 var cliOpts = struct {
 	provider     *string
 	show         *int
-	episode      *int
+	episode      *string
 	all          *bool
 	xnum         *int
 	list         *bool
@@ -340,15 +340,48 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 	// if show is movie we can skip the episode list
 	if show.IsMovie {
 		indexes = []int{0}
+
 	} else {
 		// Show has episodes
 		if !blb.IsDefault(*cliOpts.episode) {
-			indexes = []int{*cliOpts.episode - 1}
+			indexes = []int{}
+			var eprange = strings.Split(*cliOpts.episode, "-")
+			var start string
+			var end string
+			switch len(eprange) {
+				case 1:
+					start = eprange[0]
+				    end = eprange[0]
+				case 2:
+					start = eprange[0]
+				    end = eprange[1]
+				default:
+					log.Fatal("Invalid value passed to -ep. Must be a range like \"start-end\" or a single number")
+			}
+			err_fmt := "Invalid %s value for episode! Use numbers instead"
+			start_value, err := strconv.Atoi(start)
+			if start == "" {
+				start_value = 1
+			} else if err != nil {
+				log.Fatalf(err_fmt, "start")
+			}
+			end_value, err := strconv.Atoi(end)
+			if end == "" {
+				end_value = len(episodes)
+			} else if err != nil {
+				log.Fatalf(err_fmt, "end")
+			}
+
+			for ep := start_value; ep <= end_value; ep++ {
+				indexes = append(indexes, ep-1)
+			}
+
 		} else if !blb.IsDefault(*cliOpts.all) {
 			indexes = []int{}
 			for i := 0; i < len(episodes); i++ {
 				indexes = append(indexes, i)
 			}
+
 		} else {
 			idxs, err2 := fuzzyfinder.FindMulti(
 				episodes,
@@ -431,6 +464,11 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 		go func(idx int, wg *sync.WaitGroup, throttle chan int) {
 			defer wg.Done()
 			defer func() { <-throttle; fmt.Println("") }()
+			if idx < 0 || idx >= len(episodes) {
+				fmt.Fprintf(os.Stderr, "Ignoring invalid ep number: %d", idx)
+				fmt.Println()
+				return
+			}
 			episode := episodes[idx]
 			video := flow.getVideo(episode)
 			switch video.Format {
@@ -514,8 +552,8 @@ func main() {
 	connectAddr := flag.String("connect", "", "Start a client that connects to a blackbeard api with the given address.")
 	profileName := flag.String("profile", username, "Use a different profile folder.")
 	cliOpts.provider = flag.String("provider", "", "Use a provider.")
-	cliOpts.show = flag.Int("show", 0, "Choose a show/movie directly by Number.")
-	cliOpts.episode = flag.Int("ep", 0, "Choose an episode number to download. Both -show and -ep start from 1.")
+	cliOpts.show = flag.Int("show", 0, "Choose a show/movie directly by Number. Both -show and -ep start from 1 not 0.")
+	cliOpts.episode = flag.String("ep", "", "Choose an episode number to download. You can also pass in a range e.g. \"1-20\" to download the first 20 episodes or \"20-\" to download all after the 20th. This range is inclusive.")
 	cliOpts.list = flag.Bool("list", false, "List line separated and stop execution. Can be used alone to list providers, with search to list show results or with show to list episodes. This is the only option that will prevent from downloading anything and just output data.")
 	cliOpts.search = flag.String("search", "", "Searches for show/movie.")
 	cliOpts.all = flag.Bool("D", false, "Download all episodes.")
