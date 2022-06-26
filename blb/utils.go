@@ -490,3 +490,14 @@ func Timeout[R any](timeout int, f func() R) (R, bool) {
 		return res, false
 	}
 }
+
+// Inverts an array
+func Invert[T any](array []T) []T {
+  var length = len(array)
+  var result = make([]T, length)
+
+  for i, v := range array {
+    result[length-1-i] = v
+  }
+  return result
+}

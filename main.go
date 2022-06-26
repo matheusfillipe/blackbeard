@@ -51,6 +51,7 @@ func completer(d prompt.Document, provider string) []prompt.Suggest {
 	for _, search := range previousSearches {
 		s = append(s, prompt.Suggest{Text: search.Query, Description: search.Description})
 	}
+	s = blb.Invert(s)
 	return prompt.FilterHasPrefix(s, d.GetWordBeforeCursor(), true)
 }
 
