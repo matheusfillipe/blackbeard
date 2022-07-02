@@ -22,8 +22,8 @@ func Headless() {
 			// chromedp.Flag("disable-extensions", false),
 			chromedp.Flag("headless", false),
 			chromedp.Flag("disable-notifications", true),
- 			chromedp.Flag("block-new-web-contents", true),
- 			// chromedp.Flag("disable-popup-blocking", false),
+			chromedp.Flag("block-new-web-contents", true),
+			// chromedp.Flag("disable-popup-blocking", false),
 			// chromedp.Flag("load-extension", "/home/matheus/Downloads/uBlock0.chromium"),
 		)...)
 	defer cancel()
@@ -83,9 +83,6 @@ func Headless() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-
-
 
 	fmt.Printf("%s/n", outerhtml)
 
