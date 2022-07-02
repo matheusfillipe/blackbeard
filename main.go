@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
@@ -350,14 +351,14 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 			var start string
 			var end string
 			switch len(eprange) {
-				case 1:
-					start = eprange[0]
-				    end = eprange[0]
-				case 2:
-					start = eprange[0]
-				    end = eprange[1]
-				default:
-					log.Fatal("Invalid value passed to -ep. Must be a range like \"start-end\" or a single number")
+			case 1:
+				start = eprange[0]
+				end = eprange[0]
+			case 2:
+				start = eprange[0]
+				end = eprange[1]
+			default:
+				log.Fatal("Invalid value passed to -ep. Must be a range like \"start-end\" or a single number")
 			}
 			err_fmt := "Invalid %s value for episode! Use numbers instead"
 			start_value, err := strconv.Atoi(start)
@@ -445,47 +446,63 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 		formatstr = ""
 	}
 
-	// clear screen
-	fmt.Print("\033[H\033[2J")
+	for true {
+		// clear screen
+		fmt.Print("\033[H\033[2J")
 
-	if len(indexes) > 1 {
-		fmt.Printf("Downloading selected episodes from '%d' to '%d'", indexes[0]+1, indexes[len(indexes)-1]+1)
-	}
+		if len(indexes) > 1 {
+			fmt.Printf("Downloading selected episodes from '%d' to '%d'", indexes[0]+1, indexes[len(indexes)-1]+1)
+		}
 
-	// Create space for download lines
-	fmt.Print(blb.Repeat("\n", len(indexes)+1))
+		// Create space for download lines
+		fmt.Print(blb.Repeat("\n", len(indexes)+1))
 
-	// Go back up
-	fmt.Print(blb.Repeat("\033[1A", len(indexes)+1))
+		// Go back up
+		fmt.Print(blb.Repeat("\033[1A", len(indexes)+1))
 
-	for _, idx := range indexes {
-		fmt.Println("")
-		throttle <- 1
-		wg.Add(1)
-		go func(idx int, wg *sync.WaitGroup, throttle chan int) {
-			defer wg.Done()
-			defer func() { <-throttle; fmt.Println("") }()
-			if idx < 0 || idx >= len(episodes) {
-				fmt.Fprintf(os.Stderr, "Ignoring invalid ep number: %d", idx)
-				fmt.Println()
-				return
-			}
-			episode := episodes[idx]
-			video := flow.getVideo(episode)
-			switch video.Format {
-			case "mp4":
-				if !video.Download(dir, idx, formatstr) {
-					fmt.Printf("Failed to download %s", video.Name)
-					fmt.Printf(blb.Repeat("\n", maxConcurrency+1))
+		var has_failed = false
+
+		for _, idx := range indexes {
+			fmt.Println("")
+			throttle <- 1
+			wg.Add(1)
+			go func(idx int, wg *sync.WaitGroup, throttle chan int) {
+				defer wg.Done()
+				defer func() { <-throttle; fmt.Println("") }()
+				if idx < 0 || idx >= len(episodes) {
+					fmt.Fprintf(os.Stderr, "Ignoring invalid ep number: %d", idx)
+					fmt.Println()
+					return
 				}
+				episode := episodes[idx]
+				video := flow.getVideo(episode)
+				switch video.Format {
+				case "mp4":
+					if !video.Download(dir, idx, formatstr) {
+						fmt.Printf("Failed to download %s", video.Name)
+						fmt.Printf(blb.Repeat("\n", maxConcurrency+1))
+						has_failed = true
+					}
+					break
+				default:
+					fmt.Printf("Download not implemented for format: %s\nURL: %s", video.Format, video.Request.Url)
+				}
+			}(idx, &wg, throttle)
+		}
+		wg.Wait()
+		fmt.Println("\n\n                        All Done!!!")
+
+		if has_failed {
+			fmt.Println("Some downloads have failed, do you wish to try again? (This will resume incomplete downloads)")
+			reader := bufio.NewReader(os.Stdin)
+			fmt.Printf("Answer [Y/n]: ")
+			response, err := reader.ReadString('\n')
+			response = strings.ToLower(strings.TrimSpace(response))
+			if err != nil || !(response == "y" || response == "") {
 				break
-			default:
-				fmt.Printf("Download not implemenetd for format: %s\nURL: %s", video.Format, video.Request.Url)
 			}
-		}(idx, &wg, throttle)
+		}
 	}
-	wg.Wait()
-	fmt.Println("\n\n                        All Done!!!")
 }
 
 func apiConnect(url string) {
