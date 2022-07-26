@@ -26,6 +26,7 @@ func curl[R Request | string](_request R) (string, bool) {
 
 	easy.Setopt(gocurl.OPT_URL, request.Url)
 	easy.Setopt(gocurl.OPT_VERBOSE, false)
+	easy.Setopt(gocurl.OPT_FOLLOWLOCATION, true)
 
 	easy.Setopt(gocurl.OPT_WRITEFUNCTION, func(buf []byte, userdata interface{}) bool {
 		body += string(buf)

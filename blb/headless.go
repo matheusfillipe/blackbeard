@@ -69,7 +69,6 @@ func Headless() {
 		chromedp.Sleep(2*time.Second),
 		chromedp.Click(elm, chromedp.NodeVisible),
 		chromedp.Sleep(2*time.Second),
-		chromedp.Click(elm, chromedp.WithPollingTimeout),
 		// chromedp.Sleep(5*time.Second),
 		// chromedp.Click(elm, chromedp.NodeVisible),
 		// chromedp.Sleep(20*time.Second),
