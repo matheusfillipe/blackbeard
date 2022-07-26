@@ -3,6 +3,7 @@
 package providers
 
 import (
+	"net/url"
 	"encoding/base64"
 	"fmt"
 	"github.com/matheusfillipe/blackbeard/blb"
@@ -15,7 +16,7 @@ import (
 
 var soapUserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0"}
 
-const soapRootUrl = "https://ww1.ssoap2day.to"
+const soapRootUrl = "https://soap2day.ai/"
 
 type Soap2day struct{}
 
@@ -35,32 +36,33 @@ func (a Soap2day) Info() blackbeard.ProviderInfo {
 }
 
 func (a Soap2day) SearchShows(query string) []blackbeard.Show {
-	url := soapRootUrl + "/index.php?do=search"
+	_url := soapRootUrl + "search?term="
 
 	// Find shows
 	var shows []blackbeard.Show
 
 	request := blackbeard.Request{
-		Url:     url,
-		Method:  "POST",
+		Url:     _url + url.PathEscape(query),
+		Method:  "GET",
 		Headers: blackbeard.MergeMaps(soapUserAgent, map[string]string{
 			"Content-Type": "application/x-www-form-urlencoded",
 		}),
 		Curl:    true,
-		Body: map[string]string{
-			"do":           "search",
-			"subaction":    "search",
-			"search_start": "0",
-			"full_search":  "0",
-			"result_from":  "1",
-			"story":        query,
-		},
+		// Body: map[string]string{
+		// 	"do":           "search",
+		// 	"subaction":    "search",
+		// 	"search_start": "0",
+		// 	"full_search":  "0",
+		// 	"result_from":  "1",
+		// 	"story":        query,
+		// },
 	}
 
 
 	blackbeard.ScrapePage(request, "div.thumbnail.text-center", func(i int, s *goquery.Selection) {
-		href := s.Find("div:nth-child(2) > a").AttrOr("href", "")
-		title := s.Find("div:nth-child(2) > a").AttrOr("title", "No Title")
+		href := s.Find("h5 a").AttrOr("href", "")
+		title := s.Find("h5 a").Text()
+		title = strings.TrimSpace(title)
 		strings.TrimSuffix(title, " Soap2day")
 
 		metadata := blackbeard.Metadata{}
@@ -85,6 +87,7 @@ func (a Soap2day) SearchShows(query string) []blackbeard.Show {
 	return shows
 }
 
+// TODO fix soap2day episodes
 func (a Soap2day) GetEpisodes(show *blackbeard.Show) []blackbeard.Episode {
 	url := show.Url
 	request := blackbeard.Request{
