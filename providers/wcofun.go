@@ -99,7 +99,7 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 	}
 
 	next_path := ""
-	blackbeard.ScrapePage(request, "body > div:nth-child(3) > div.twelve.columns > div > div.fourteen.columns > div:nth-child(7) > script:nth-child(2)", func(i int, s *goquery.Selection) {
+	blackbeard.ScrapePage(request, "div.fourteen.columns script:nth-child(2)", func(i int, s *goquery.Selection) {
 		script := s.Text()
 		offset_ := regexp.MustCompile(`^.*- (\d+)\).*$`).FindAllStringSubmatch(script, -1)
 		if len(offset_) < 1 {
