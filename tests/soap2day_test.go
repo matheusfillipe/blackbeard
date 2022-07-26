@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/matheusfillipe/blackbeard/providers"
 	"testing"
 )
