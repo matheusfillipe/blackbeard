@@ -273,7 +273,7 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 
 	if len(shows) == 0 {
 		if providers[providerName].Info().Cloudflared {
-			fmt.Println("You might want to install curl impersonate or use the api: https://github.com/matheusfillipe/blackbeard#usage")
+			fmt.Println("Nothing found. If that is unexpected you might want to install curl impersonate or use the api: https://github.com/matheusfillipe/blackbeard#usage")
 		}
 		log.Fatal("No shows/movies found")
 	}
