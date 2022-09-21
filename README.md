@@ -36,7 +36,7 @@ You can run or connect to an api using either `-api` or `-connect`. You can also
 You can test this without having to compile curl-impersonate using the heroku api:
 
 ``` sh
-blackbeard -connect https://blackbeardapi.herokuapp.com/
+blackbeard -connect https://blackbeard.fly.dev/
 ```
 
 # Example usage
