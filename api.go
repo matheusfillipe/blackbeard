@@ -118,7 +118,7 @@ func startApiServer(host string, port int) {
 
 	// Life check
 	r.GET("/", func(c *gin.Context) {
-		c.String(http.StatusOK, "Hi from blackbeard api")
+		c.String(http.StatusOK, "Hi from blackbeard api. If you see this it means it is working!")
 	})
 
 	// Check version
