@@ -20,7 +20,7 @@ import (
 	"github.com/c-bata/go-prompt"
 	blb "github.com/matheusfillipe/blackbeard/blb"
 	"github.com/matheusfillipe/blackbeard/providers"
-	"github.com/matheusfillipe/go-fuzzyfinder"
+	"github.com/ktr0731/go-fuzzyfinder"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/term"
 )

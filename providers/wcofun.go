@@ -15,7 +15,7 @@ import (
 
 var wcofunUserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"}
 
-const wcofunRootUrl = "https://www.wcofun.com"
+const wcofunRootUrl = "https://www.wcofun.net"
 
 type Wcofun struct{}
 
