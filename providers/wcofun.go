@@ -5,15 +5,16 @@ package providers
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/matheusfillipe/blackbeard/blb"
 	"regexp"
 	"strconv"
 	"strings"
 
+	"github.com/matheusfillipe/blackbeard/blb"
+
 	"github.com/PuerkitoBio/goquery"
 )
 
-var wcofunUserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"}
+var wcofunUserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:107.0) Gecko/20100101 Firefox/107.0"}
 
 const wcofunRootUrl = "https://www.wcofun.net"
 
@@ -29,7 +30,7 @@ type WcofunCdnResponse struct {
 
 func (a Wcofun) Info() blackbeard.ProviderInfo {
 	return blackbeard.ProviderInfo{
-		Name: "9anime",
+		Name: "wcofun",
 		Url: "https://www.wcofun.com/",
 		Description: "Watch Cartoons and Anime Online in HD for Free",
 		Cloudflared: true,
@@ -149,10 +150,18 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 		return blackbeard.Video{Request: blackbeard.Request{Url: url}, Format: "mp4"}
 	}
 
-	next_path = wcofunRootUrl + next_path
-
 	// Get api url
 	request.Url = next_path
+	request.Headers["Referer"] = wcofunRootUrl
+	request.Headers["authority"] = "www.wcofun.com"
+	request.Headers["pragma"] = "no-cache"
+	request.Headers["cache-control"] = "no-cache"
+	request.Headers["x-requested-with"] = "XMLHttpRequest"
+	request.Headers["sec-gpc"] = "1"
+	request.Headers["sec-fetch-site"] = "same-origin"
+	request.Headers["sec-fetch-mode"] = "cors"
+	request.Headers["sec-fetch-dest"] = "empty"
+	request.Headers["accept-language"] = "en-US,en;q=0.9"
 
 	apiPath := ""
 	blackbeard.ScrapePage(request, "body", func(i int, s *goquery.Selection) {
@@ -168,16 +177,6 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 
 	// Request the api
 	request.Url = apiPath
-	request.Headers["Referer"] = wcofunRootUrl
-	request.Headers["authority"] = "www.wcofun.com"
-	request.Headers["pragma"] = "no-cache"
-	request.Headers["cache-control"] = "no-cache"
-	request.Headers["x-requested-with"] = "XMLHttpRequest"
-	request.Headers["sec-gpc"] = "1"
-	request.Headers["sec-fetch-site"] = "same-origin"
-	request.Headers["sec-fetch-mode"] = "cors"
-	request.Headers["sec-fetch-dest"] = "empty"
-	request.Headers["accept-language"] = "en-US,en;q=0.9"
 
 	data := WcofunCdnResponse{}
 	blackbeard.GetJson(request, &data)

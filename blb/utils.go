@@ -185,7 +185,6 @@ func GetJson[T any](request Request, data T) T {
 	err := json.Unmarshal([]byte(body), data)
 	if err != nil {
 		println("Could not parse json ")
-		println(body)
 		println(err.Error())
 		return data
 	}

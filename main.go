@@ -501,6 +501,8 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 			if err != nil || !(response == "y" || response == "") {
 				break
 			}
+		} else {
+			break
 		}
 	}
 }
