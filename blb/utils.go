@@ -147,7 +147,6 @@ func ScrapePage(request Request, selector string, handler func(int, *goquery.Sel
 		body = strings.NewReader(bstring)
 	}
 
-
 	doc, err := goquery.NewDocumentFromReader(body)
 	if err != nil {
 		println("Could not parse page ", request.Url)
@@ -194,8 +193,17 @@ func GetJson[T any](request Request, data T) T {
 // Downloads a video to the given directory
 // linepos is the position to print the download progress line in
 func (video Video) Download(dir string, linepos int, prepend_str_fmt string) bool {
-	// create client
-	client := grab.NewClient()
+	// create client that follow redirects
+	httpclient := &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+		},
+	}
+	// grab client
+	client := grab.Client{
+		UserAgent:  "grab",
+		HTTPClient: httpclient,
+	}
 	req, err := grab.NewRequest(".", video.Request.Url)
 	if err != nil {
 		return false
@@ -204,14 +212,16 @@ func (video Video) Download(dir string, linepos int, prepend_str_fmt string) boo
 	defer cancel()
 	req = req.WithContext(ctx)
 
+	println(video.Request.Url)
 	for key, value := range video.Request.Headers {
 		req.HTTPRequest.Header.Set(key, value)
+		println(key, "=", value)
 	}
 
 	// start download
 	name := SanitizeFilename(video.Name)
 	if len(prepend_str_fmt) > 1 {
-		name = dir + "/" + fmt.Sprintf(prepend_str_fmt, linepos + 1) + name
+		name = dir + "/" + fmt.Sprintf(prepend_str_fmt, linepos+1) + name
 	} else {
 		name = dir + "/" + name
 	}
@@ -492,11 +502,20 @@ func Timeout[R any](timeout int, f func() R) (R, bool) {
 
 // Inverts an array
 func Invert[T any](array []T) []T {
-  var length = len(array)
-  var result = make([]T, length)
+	var length = len(array)
+	var result = make([]T, length)
 
-  for i, v := range array {
-    result[length-1-i] = v
-  }
-  return result
+	for i, v := range array {
+		result[length-1-i] = v
+	}
+	return result
+}
+
+// Create the copy of a map
+func MapCopy[T comparable, O any](m map[T]O) map[T]O {
+	result := make(map[T]O)
+	for k, v := range m {
+		result[k] = v
+	}
+	return result
 }

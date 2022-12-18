@@ -5,6 +5,7 @@ package providers
 import (
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -15,6 +16,10 @@ import (
 )
 
 var wcofunUserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:107.0) Gecko/20100101 Firefox/107.0"}
+
+func MakeDefaultHeaders() map[string]string {
+	return blackbeard.MapCopy(wcofunUserAgent)
+}
 
 const wcofunRootUrl = "https://www.wcofun.net"
 
@@ -27,11 +32,10 @@ type WcofunCdnResponse struct {
 	Hd     string `json:"hd"`
 }
 
-
 func (a Wcofun) Info() blackbeard.ProviderInfo {
 	return blackbeard.ProviderInfo{
-		Name: "wcofun",
-		Url: "https://www.wcofun.com/",
+		Name:        "wcofun",
+		Url:         "https://www.wcofun.com/",
 		Description: "Watch Cartoons and Anime Online in HD for Free",
 		Cloudflared: true,
 	}
@@ -46,7 +50,7 @@ func (a Wcofun) SearchShows(query string) []blackbeard.Show {
 	request := blackbeard.Request{
 		Url:     url,
 		Method:  "POST",
-		Headers: wcofunUserAgent,
+		Headers: MakeDefaultHeaders(),
 		Curl:    true,
 		Body: map[string]string{
 			"catara":  query,
@@ -69,7 +73,7 @@ func (a Wcofun) GetEpisodes(show *blackbeard.Show) []blackbeard.Episode {
 	url := show.Url
 	request := blackbeard.Request{
 		Url:     url,
-		Headers: wcofunUserAgent,
+		Headers: MakeDefaultHeaders(),
 		Curl:    true,
 	}
 
@@ -95,7 +99,7 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 	url := episode.Url
 	request := blackbeard.Request{
 		Url:     url,
-		Headers: wcofunUserAgent,
+		Headers: MakeDefaultHeaders(),
 		Curl:    true,
 	}
 
@@ -183,8 +187,38 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 	if data.Cdn != "" && data.Enc != "" {
 		url = data.Cdn + "/getvid?evid=" + data.Enc
 	}
+	// Make a request to that url and check if there is a redirect
+	resp, err := http.Get(url)
+	if err == nil {
+		defer resp.Body.Close()
+		// Check if the response is a redirect
+		//print all response headers
+		for k, v := range resp.Header {
+			fmt.Println("Key:", k, "Value:", v)
+		}
+		if resp.StatusCode >= 300 && resp.StatusCode < 500 {
+			// Print the redirected URL
+			location := resp.Header.Get("location")
+			fmt.Println("Redirected to:", location)
+			if location != "" {
+				url = location
+			}
+		}
+	}
 
-	videoRequest := blackbeard.Request{Url: url, Headers: wcofunUserAgent}
+
+	videoRequest := blackbeard.Request{Url: url, Headers: MakeDefaultHeaders()}
+	videoRequest.Headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+	videoRequest.Headers["Accept-Language"] = "en-US,en;q=0.5"
+	videoRequest.Headers["Accept-Encoding"] = "gzip, deflate, br"
+	videoRequest.Headers["Connection"] = "keep-alive"
+	videoRequest.Headers["Upgrade-Insecure-Requests"] = "1"
+	videoRequest.Headers["Sec-Fetch-Dest"] = "document"
+	videoRequest.Headers["Sec-Fetch-Mode"] = "navigate"
+	videoRequest.Headers["Sec-Fetch-Site"] = "none"
+	videoRequest.Headers["Sec-Fetch-User"] = "?1"
+	videoRequest.Headers["Pragma"] = "no-cache"
+
 	episode.Video = blackbeard.Video{Request: videoRequest, Format: "mp4", Name: blackbeard.SanitizeFilename(episode.Title) + ".mp4"}
 	return episode.Video
 }

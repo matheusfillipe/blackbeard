@@ -28,6 +28,7 @@ func curl[R Request | string](_request R) (string, bool) {
 	easy.Setopt(gocurl.OPT_VERBOSE, false)
 
 	easy.Setopt(gocurl.OPT_WRITEFUNCTION, func(buf []byte, userdata interface{}) bool {
+		println("DEBUG", userdata.(interface{}))
 		body += string(buf)
 		return true
 	})
