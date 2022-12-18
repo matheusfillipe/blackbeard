@@ -116,7 +116,7 @@ func ScrapePage(request Request, selector string, handler func(int, *goquery.Sel
 
 	// Load the HTML document
 	if request.Curl {
-		_body, ok := curl(request)
+		_body, ok, _ := Curl(request)
 		if !ok {
 			println("Could not load page ", request.Url)
 			return
@@ -176,7 +176,7 @@ func GetJson[T any](request Request, data T) T {
 		request.Headers = map[string]string{}
 	}
 	request.Headers["accept"] = "application/json, text/javascript, */*; q=0.01"
-	body, ok := curl(request)
+	body, ok, _ := Curl(request)
 	if !ok {
 		println("Could not load page ", request.Url)
 		return data
@@ -212,10 +212,8 @@ func (video Video) Download(dir string, linepos int, prepend_str_fmt string) boo
 	defer cancel()
 	req = req.WithContext(ctx)
 
-	println(video.Request.Url)
 	for key, value := range video.Request.Headers {
 		req.HTTPRequest.Header.Set(key, value)
-		println(key, "=", value)
 	}
 
 	// start download

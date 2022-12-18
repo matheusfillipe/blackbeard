@@ -11,8 +11,9 @@ import (
 )
 
 // Performs a request using libcurl
-func curl[R Request | string](_request R) (string, bool) {
+func Curl[R Request | string](_request R) (string, bool, map[string][]string) {
 	var body string
+	var responseHeaders = make(map[string][]string)
 	easy := gocurl.EasyInit()
 	defer easy.Cleanup()
 
@@ -28,11 +29,20 @@ func curl[R Request | string](_request R) (string, bool) {
 	easy.Setopt(gocurl.OPT_VERBOSE, false)
 
 	easy.Setopt(gocurl.OPT_WRITEFUNCTION, func(buf []byte, userdata interface{}) bool {
-		println("DEBUG", userdata.(interface{}))
 		body += string(buf)
 		return true
 	})
-
+	easy.Setopt(gocurl.OPT_WRITEHEADER, true)
+	easy.Setopt(gocurl.OPT_HEADERFUNCTION, func(buf []byte, userdata interface{}) bool {
+		header := string(buf)
+		if strings.Contains(header, ":") {
+			parts := strings.SplitN(header, ":", 2)
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+			responseHeaders[key] = append(responseHeaders[key], value)
+		}
+		return true
+	})
 	if request.Method == "POST" {
 		setup_post(easy, request)
 	}
@@ -46,9 +56,9 @@ func curl[R Request | string](_request R) (string, bool) {
 
 	if err := easy.Perform(); err != nil {
 		println("ERROR: ", err.Error())
-		return "", false
+		return "", false, nil
 	}
-	return body, true
+	return body, true, responseHeaders
 }
 
 func setup_post(easy *gocurl.CURL, request Request) {

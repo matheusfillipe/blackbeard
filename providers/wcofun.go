@@ -5,7 +5,6 @@ package providers
 import (
 	"encoding/base64"
 	"fmt"
-	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -188,20 +187,11 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 		url = data.Cdn + "/getvid?evid=" + data.Enc
 	}
 	// Make a request to that url and check if there is a redirect
-	resp, err := http.Get(url)
-	if err == nil {
-		defer resp.Body.Close()
-		// Check if the response is a redirect
-		//print all response headers
-		for k, v := range resp.Header {
-			fmt.Println("Key:", k, "Value:", v)
-		}
-		if resp.StatusCode >= 300 && resp.StatusCode < 500 {
-			// Print the redirected URL
-			location := resp.Header.Get("location")
-			fmt.Println("Redirected to:", location)
-			if location != "" {
-				url = location
+	_, ok, headers := blackbeard.Curl(url)
+	if ok {
+		for k, v := range headers {
+			if strings.ToLower(k) == "location" && len(v) > 0 {
+				url = v[0]
 			}
 		}
 	}

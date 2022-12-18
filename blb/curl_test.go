@@ -40,7 +40,7 @@ func TestCurl(t *testing.T) {
 		ts := mockServer()
 		defer ts.Close()
 		println(ts.URL)
-		body, ok := curl(ts.URL + "/gettest")
+		body, ok, _ := Curl(ts.URL + "/gettest")
 
 		if !ok {
 			t.Error("Curl GET failed. Not ok")
@@ -61,7 +61,7 @@ func TestCurl(t *testing.T) {
 		defer ts.Close()
 		ua := map[string]string{"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0"}
 		request := Request{Url: ts.URL, Method: "POST", Headers: ua, Body: map[string]string{"Ping": "Pong"}}
-		body, ok := curl(request)
+		body, ok, _ := Curl(request)
 		respList := strings.Split(body, "\n")
 
 		if !ok {
