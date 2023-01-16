@@ -184,7 +184,12 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 	data := WcofunCdnResponse{}
 	blackbeard.GetJson(request, &data)
 	if data.Cdn != "" && data.Enc != "" {
-		url = data.Cdn + "/getvid?evid=" + data.Enc
+		if len(data.Hd) > 0 {
+			url = data.Cdn + "/getvid?evid=" + data.Hd
+		} else {
+			url = data.Cdn + "/getvid?evid=" + data.Enc
+		}
+
 	}
 	// Make a request to that url and check if there is a redirect
 	_, ok, headers := blackbeard.Curl(url)
