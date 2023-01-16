@@ -201,18 +201,7 @@ func (a Wcofun) GetVideo(episode *blackbeard.Episode) blackbeard.Video {
 		}
 	}
 
-
 	videoRequest := blackbeard.Request{Url: url, Headers: MakeDefaultHeaders()}
-	videoRequest.Headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
-	videoRequest.Headers["Accept-Language"] = "en-US,en;q=0.5"
-	videoRequest.Headers["Accept-Encoding"] = "gzip, deflate, br"
-	videoRequest.Headers["Connection"] = "keep-alive"
-	videoRequest.Headers["Upgrade-Insecure-Requests"] = "1"
-	videoRequest.Headers["Sec-Fetch-Dest"] = "document"
-	videoRequest.Headers["Sec-Fetch-Mode"] = "navigate"
-	videoRequest.Headers["Sec-Fetch-Site"] = "none"
-	videoRequest.Headers["Sec-Fetch-User"] = "?1"
-	videoRequest.Headers["Pragma"] = "no-cache"
 
 	episode.Video = blackbeard.Video{Request: videoRequest, Format: "mp4", Name: blackbeard.SanitizeFilename(episode.Title) + ".mp4"}
 	return episode.Video

@@ -275,6 +275,7 @@ Loop:
 		float64(resp.BytesComplete())/1024/1024,
 		float64(resp.Size())/1024/1024)
 
+	// print(resp.HTTPResponse.Request.URL.String())
 	return true
 }
 

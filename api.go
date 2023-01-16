@@ -266,6 +266,7 @@ func startApiServer(host string, port int) {
 		}
 
 		video := provider.GetVideo(&episode)
+		video.Metadata.CurlCommand = video.Request.ToCurlString()
 		c.JSON(http.StatusOK, video)
 
 		// Store on cache

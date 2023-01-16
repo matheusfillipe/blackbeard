@@ -7,6 +7,7 @@ type Metadata struct {
 	Description  string
 	ThumbnailUrl string
 	Urls         []string
+	CurlCommand  string
 }
 
 // An episode of a tv show
@@ -94,6 +95,26 @@ type Request struct {
 	// If set to true will print body and request to stdout.
 	// Usefult for when writting provider plugins, do not let this on in production.
 	Debug bool
+}
+
+// Converts this request to a curl command. Useful for debugging.
+func (r Request) ToCurlString() string {
+	var curl string
+	if len(r.Method) > 0 {
+		curl += "curl -X " + r.Method
+	} else {
+		curl += "curl -X GET"
+	}
+	curl += " \\\n"
+	for k, v := range r.Headers {
+		curl += "     -H '" + k + ": " + v + "'"
+		curl += " \\\n"
+	}
+	if r.Body != nil {
+		curl += " -d '" + r.Body[""] + "'"
+	}
+	curl += " '" + r.Url + "'"
+	return curl
 }
 
 // Create a new request from an existing one, appending to the url
