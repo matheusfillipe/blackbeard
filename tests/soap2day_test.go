@@ -6,7 +6,7 @@ import (
 )
 
 func TestSoap2day(t *testing.T) {
-	t.Run("Wcofun test", func(t *testing.T) {
+	t.Run("Soap2day test", func(t *testing.T) {
 		a := providers.GetProviders()["soap2day"]
 		shows := a.SearchShows("attack on titan")
 		if len(shows) < 1 {

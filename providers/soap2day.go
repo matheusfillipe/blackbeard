@@ -16,7 +16,7 @@ import (
 
 var soapUserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0"}
 
-const soapRootUrl = "https://soap2day.ai/"
+const soapRootUrl = "https://ww.soap2day.ai/"
 
 type Soap2day struct{}
 
