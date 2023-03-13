@@ -14,13 +14,13 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-var wcofunUserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:107.0) Gecko/20100101 Firefox/107.0"}
+var wcofunUserAgent = map[string]string{"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/109.0"}
 
 func MakeDefaultHeaders() map[string]string {
 	return blackbeard.MapCopy(wcofunUserAgent)
 }
 
-const wcofunRootUrl = "https://www.wcofun.net"
+const wcofunRootUrl = "https://www.wcofun.com"
 
 type Wcofun struct{}
 
@@ -34,7 +34,7 @@ type WcofunCdnResponse struct {
 func (a Wcofun) Info() blackbeard.ProviderInfo {
 	return blackbeard.ProviderInfo{
 		Name:        "wcofun",
-		Url:         "https://www.wcofun.com/",
+		Url:         "https://www.wcofun.net/",
 		Description: "Watch Cartoons and Anime Online in HD for Free",
 		Cloudflared: true,
 	}
