@@ -20,7 +20,7 @@ func MakeDefaultHeaders() map[string]string {
 	return blackbeard.MapCopy(wcofunUserAgent)
 }
 
-const wcofunRootUrl = "https://www.wcofun.com"
+const wcofunRootUrl = "https://www.wcofun.net"
 
 type Wcofun struct{}
 

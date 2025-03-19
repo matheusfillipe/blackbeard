@@ -1,4 +1,4 @@
-FROM golang:1.18.5-buster
+FROM golang:1.23.4-buster
     MAINTAINER Matheus Fillipe <matheusfillipeag@gmail.com>
 
 ARG version="v0.5.2"
