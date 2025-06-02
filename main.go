@@ -17,6 +17,8 @@ import (
 	"strings"
 	"sync"
 
+	
+	ffmpeg "github.com/u2takey/ffmpeg-go"
 	"github.com/c-bata/go-prompt"
 	blb "github.com/matheusfillipe/blackbeard/blb"
 	"github.com/matheusfillipe/blackbeard/providers"
@@ -484,6 +486,19 @@ func downloadTuiFlow(flow TuiFlowTemplate) {
 						has_failed = true
 					}
 					break
+				case "m3u8":
+					if !video.Download(dir, idx, "") {
+						fmt.Printf("Failed to download %s", video.Name)
+						fmt.Printf(blb.Repeat("\n", maxConcurrency+1))
+						has_failed = true
+					}
+					fmt.Printf("%s, dir: %s", video.Name, dir)	
+					err := ffmpeg.Input(video.Request.Url, ffmpeg.KwArgs{"extension_picky": "0"}).
+					Output(blb.SanitizeFilename(video.Name) + ".mkv", ffmpeg.KwArgs{"codec": "copy"}).
+		OverWriteOutput().ErrorToStdOut().Run()
+		if err != nil {
+			fmt.Printf("Failed to parse m3u playlist %s", video.Name)
+		}
 				default:
 					fmt.Printf("Download not implemented for format: %s\nURL: %s", video.Format, video.Request.Url)
 				}

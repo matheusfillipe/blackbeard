@@ -126,12 +126,13 @@ func ScrapePage(request Request, selector string, handler func(int, *goquery.Sel
 		body = strings.NewReader(_body)
 	} else {
 		res, ok := Perform(request)
-		defer res.Body.Close()
 
 		if !ok {
 			println("Could not load page ", request.Url)
 			return
 		}
+		defer res.Body.Close()
+
 		body = res.Body
 
 	}

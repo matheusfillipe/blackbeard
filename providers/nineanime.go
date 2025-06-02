@@ -20,7 +20,7 @@ func (a NineAnime) Info() blackbeard.ProviderInfo {
 }
 
 func (a NineAnime) SearchShows(query string) []blackbeard.Show {
-	rootUrl := "https://9anime.vc"
+	rootUrl := "https://google.com"
 	url := rootUrl + "/search?keyword=" + url.QueryEscape(query)
 
 	// Find shows
