@@ -78,6 +78,12 @@ blackbeard -provider wcofun -search "attack on titan" -show 1 -D -x 4 -connect h
 ```
 
 
+# Development
+
+```sh
+go test ./tests/...
+```
+
 
 # Disclaimer
 

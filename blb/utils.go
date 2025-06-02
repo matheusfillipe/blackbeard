@@ -267,6 +267,7 @@ Loop:
 	// check for errors
 	if err := resp.Err(); err != nil {
 		fmt.Printf("Download failed: %v\n", err.Error())
+		fmt.Printf("URL: %s\n", video.Request.Url)
 		return false
 	}
 	fmt.Printf("%d > Finished %s: %.2fMB/%.2fMB (100%%)\n",

@@ -18,9 +18,9 @@ import (
 	"sync"
 
 	"github.com/c-bata/go-prompt"
+	"github.com/ktr0731/go-fuzzyfinder"
 	blb "github.com/matheusfillipe/blackbeard/blb"
 	"github.com/matheusfillipe/blackbeard/providers"
-	"github.com/ktr0731/go-fuzzyfinder"
 	_ "github.com/mattn/go-sqlite3"
 	"golang.org/x/term"
 )
